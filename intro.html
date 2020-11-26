@@ -1,12 +1,20 @@
 <!DOCTYPE HTML>
 <html>
     <head>
-        <script src="/socket.io/socket.io.js"></script>
         <script type="text/javascript">
-            var socket = io();
+            function btnSubmit_Click()
+            {
+                var nickname = document.getElementById("tbNickname").value;
+                window.location.href = "/maingame?"+nickname;
+            }
         </script>
     </head>
     <body>
         <h1>Intro screen</h1>
+        <div>
+            <h2>Enter nickname:</h2>
+            <input type="text" id="tbNickname"/>
+            <input type="submit" onclick="btnSubmit_Click();"/>
+        </div>
     </body>
 </html>
