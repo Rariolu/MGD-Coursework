@@ -20,30 +20,6 @@ var introScreen = function(req, res)
 
 app.get("/",introScreen);
 
-/*
-
-var mainGame = function(req, res)
-{
-    var nickname = req.query.nickname;
-    if (nickname != null)
-    {
-        console.log("Nickname: "+nickname);
-        openIDs.push({playerNickname:nickname, playerID:playerCount++});
-    }
-    res.sendFile(__dirname+"/maingame.html");
-};
-
-app.get("/maingame", mainGame);
-
-var gameover = function(req, res)
-{
-    res.sendFile(__dirname+"/gameover.html");
-};
-
-app.get("/gameover",gameover);
-
-*/
-
 var miscURL = function(req,res)
 {
     res.sendFile(__dirname+req.url);
@@ -58,6 +34,7 @@ function SendPage(path, socket)
         if (err)
         {
             console.log(err);
+            socket.emit("pageContents",err);
         }
         else
         {
