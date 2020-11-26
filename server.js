@@ -1,10 +1,12 @@
 var app = require("express")();
 var http = require("http").createServer(app);
 var io = require("socket.io")(http);
+var fs = require("fs");
+
 const bodyParser = require('body-parser');
 
 var playerCount = 0;
-var openIDs = [];
+//var openIDs = [];
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
@@ -13,10 +15,12 @@ app.use(bodyParser.json());
 
 var introScreen = function(req, res)
 {
-    res.sendFile(__dirname+"/intro.html");
+    res.sendFile(__dirname+"/index.html");
 };
 
 app.get("/",introScreen);
+
+/*
 
 var mainGame = function(req, res)
 {
@@ -38,22 +42,46 @@ var gameover = function(req, res)
 
 app.get("/gameover",gameover);
 
+*/
+
 var miscURL = function(req,res)
 {
-    console.log(req.url);
     res.sendFile(__dirname+req.url);
 };
 
 app.get("/*",miscURL);
 
+function SendPage(path, socket)
+{
+    var fileRead = function(err, data)
+    {
+        if (err)
+        {
+            console.log(err);
+        }
+        else
+        {
+            //console.log(data);
+            socket.emit("pageContents", data);
+        }
+    };
+    fs.readFile(path,"utf8",fileRead);
+}
+
 var ioConnection = function(socket)
 {
     console.log("Client connected.");
-    if (openIDs.length > 0)
+    SendPage("./intro.html", socket);
+    
+    var startGame = function(nickname)
     {
-        var id = openIDs.shift();
-        console.log("client's nickname is now "+id.playerNickname+"; id is "+id.playerID);
-    }
+        SendPage("./maingame.html",socket);
+        console.log(nickname);
+        socket.emit("nickname",nickname);
+    };
+    
+    socket.on("startgame", startGame);
+    
     var ioDisconnection = function()
     {
         console.log("Client disconnected.");

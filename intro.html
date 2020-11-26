@@ -1,15 +1,18 @@
 <!DOCTYPE HTML>
 <html>
     <head>
-        <script type="text/javascript">
+
+    </head>
+    <body>
+        <!--<script type="text/javascript">
             function btnSubmit_Click()
             {
                 var nickname = document.getElementById("tbNickname").value;
-                window.location.href = "/maingame/?nickname="+nickname;
+                //window.location.href = "/maingame/?nickname="+nickname;
+                var socket = io();
+                socket.emit("startgame",nickname);
             }
-        </script>
-    </head>
-    <body>
+        </script>-->
         <h1>Intro screen</h1>
         <div>
             <h2>Enter nickname:</h2>
