@@ -6,12 +6,19 @@ var fs = require("fs");
 const bodyParser = require('body-parser');
 
 var playerCount = 0;
-//var openIDs = [];
+var players = [];
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
-
+class ServerPlayer
+{
+    constructor(id,nickname)
+    {
+        this.playerID = id;
+        this.playerNickname = nickname;
+    }
+}
 
 var introScreen = function(req, res)
 {
@@ -43,6 +50,21 @@ function SendPage(path, socket)
         }
     };
     fs.readFile(path,"utf8",fileRead);
+}
+
+function SpawnExistingPlayers(socket)
+{
+    for (let p in players)
+    {
+        socket.emit("spawn",players[p]);
+    }
+}
+
+function PlayerSpawn(id, nickname)
+{
+    var player = new ServerPlayer(id,nickname);
+    players[id] = player;
+    io.emit("spawn", player);
 }
 
 var ioConnection = function(socket)
