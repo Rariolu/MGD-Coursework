@@ -329,7 +329,7 @@ function DownInteraction(pos)
         {
             var v1 = new Vector(pos.x - x, pos.y - y);
             v1.normalize();
-            
+            socket.emit("shotfired",{x,y}, v1);
         }
     }
     MoveInteraction(pos);
