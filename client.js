@@ -8,6 +8,8 @@ var canvasContext;
 var startTime;
 var lastPoint = null;
 var players = [];
+var thisID;
+//var thisPlayer;
 var gameOver = false;
 var controls = [];
 var btnDown;
@@ -73,19 +75,75 @@ function Initialisation()
     socket.on("despawn", PlayerDespawn);
     socket.on("posupdate", PosUpdate);
     socket.on("velupdate", VelUpdate);
+    socket.on("setplayer", SetPlayer);
+}
+
+function SetPlayer(id)
+{
+    thisID = id;
 }
 
 function PosUpdate(id, x, y)
 {
-    players[id].x = x;
-    players[id].y = y;
-    console.log("posupdate");
+    /*if (thisPlayer != null && id === thisPlayer.playerID)
+    {
+        console.log("updated this player "+id);
+        if (thisPlayer != null)
+        {
+            thisPlayer.x = x;
+            thisPlayer.y = y;
+        }
+    }
+    else*/
+    if (id === thisID)
+    {
+        console.log("Updated this player");
+    }
+    else
+    {
+        console.log("Updated other player");
+    }
+    
+    if (players[id] != null)
+    {
+        players[id].x = x;
+        players[id].y = y;
+    }
+    else
+    {
+        console.log("Apparently a player doesn't exist: "+id);
+    }
 }
 
 function VelUpdate(id, dX, dY)
 {
-    players[id].dX = dX;
-    players[id].dY = dY;
+    /*if (thisPlayer != null && id === thisPlayer.playerID)
+    {
+        if (thisPlayer != null)
+        {
+            thisPlayer.dX = dX;
+            thisPlayer.dY = dY;
+        }
+    }
+    else*/
+    if (id === thisID)
+    {
+        console.log("Updated this player");
+    }
+    else
+    {
+        console.log("Updated other player");
+    } 
+    
+    if (players[id] != null)
+    {
+        players[id].dX = dX;
+        players[id].dY = dY;
+    }
+    else
+    {
+        console.log("Apparently a player doesn't exist: "+id);
+    }
 }
 
 class Sprite
@@ -158,6 +216,10 @@ class Sprite
     {
         canvasContext.drawImage(this.image, this.x, this.y, this.Width(), this.Height());
     }
+    RenderCustom(rX, rY)
+    {
+        canvasContext.drawImage(this.image, rX, rY, this.Width(), this.Height());
+    }
     Update(delta)
     {
         this.x += this.dX * delta;
@@ -182,11 +244,13 @@ function PlayerSpawn(serverPlayer)
 {
     var player = new ClientPlayer(serverPlayer);
     players[serverPlayer.playerID] = player;
+    console.log(player.playerID+" spawned");
 }
 
 function PlayerDespawn(id)
 {
     delete players[id];
+    console.log(id+" despawned");
 }
 
 function GameLoop()
@@ -212,10 +276,34 @@ function Update(delta)
 function Render()
 {
     canvasContext.clearRect(0, 0, canvas.width, canvas.height);
+    canvasContext.save();
+    var thisPlayer = players[thisID];
+    if (thisPlayer != null)
+    {
+        var cX = (canvas.width - canvas.offsetLeft) / 2;
+        var cY = (canvas.height - canvas.offsetTop) / 2;
+        canvasContext.translate(cX-thisPlayer.x, cY-thisPlayer.y);
+        thisPlayer.Render();
+    }
+    /*
+    if (thisPlayer != null)
+    {
+        //thisPlayer.RenderCustom(canvas.width/2, canvas.height/2);
+        thisPlayer.RenderCustom((canvas.width - canvas.offsetLeft) /2, (canvas.height - canvas.offsetTop)/2);
+        //thisPlayer.RenderCustom(0,0);
+        canvasContext.translate(thisPlayer.x, thisPlayer.y);
+        //thisPlayer.RenderCustom(0,0);
+    }
+    
+    */
     for (let p in players)
     {
-        players[p].Render();
+        if (p != thisID)
+        {
+            players[p].Render();
+        }
     }
+    canvasContext.restore();
     for (let c in controls)
     {
         controls[c].Render();
