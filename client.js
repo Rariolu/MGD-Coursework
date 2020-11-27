@@ -46,17 +46,24 @@ function Initialisation()
       
         //btnDown.y = (canvas.height - canvas.offsetTop);
         btnDown.x = verticalX;
+        
         btnLeft = new Sprite("/left.png");
-        btnLeft.x = 
-        //btnRight = new Sprite("/right.png");
+        btnLeft.x = verticalX - btnLeft.Width();
+        btnLeft.y = btnDown.y - (btnDown.Height()/2);
+        
+        btnRight = new Sprite("/right.png");
+        btnRight.x = verticalX + btnRight.Width();
+        btnRight.y = btnLeft.y;
+        
         btnUp = new Sprite("/up.png");
         btnUp.y = btnDown.y - btnUp.Height();
         //btnUp.y = btnDown.y - btnUp.Height();
         //btnUp.y = -(canvas.height-canvas.offsetTop);
         btnUp.x = verticalX;
+        
         controls["down"] = btnDown;
         controls["left"] = btnLeft;
-        //controls["right"] = btnRight;
+        controls["right"] = btnRight;
         controls["up"] = btnUp;
         
         GameLoop();
