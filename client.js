@@ -320,16 +320,34 @@ function DownInteraction(pos)
     }
     if (!controlClicked)
     {
-        var x2 = (pos.x - players[thisID].x) * (pos.x - players[thisID].x);
-        var y2 = (pos.y - players[thisID].y) * (pos.y - players[thisID].y);
+        var x = players[thisID].x;
+        var y = players[thisID].y;
+        var x2 = (pos.x - x) * (pos.x - x);
+        var y2 = (pos.y - y) * (pos.y - y);
         var d2 = x2 + y2;
         if (d2 <= shootDistance*shootDistance)
         {
+            var v1 = new Vector(pos.x - x, pos.y - y);
+            v1.normalize();
             
         }
     }
     MoveInteraction(pos);
 }
+
+var Vector = function(x,y) 
+{
+    this.x = x;
+    this.y = y;
+} 
+
+Vector.prototype.normalize = function()
+{
+    var length = Math.sqrt(this.x*this.x+this.y*this.y); //calculating length
+    this.x = this.x/length; //assigning new value to x (dividing x by length of the vector)
+    this.y= this.y/length; //assigning new value to y
+}
+
 
 function MoveInteraction(pos)
 {
