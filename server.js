@@ -125,9 +125,10 @@ function PlayerSpawn(id)
 function PlayerDespawn(id)
 {
     delete players[id];
+    io.emit("despawn",id);
 }
 
-const playerSpeed = 50;
+const playerSpeed = 100;
 var ioConnection = function(socket)
 {
     console.log("Client connected.");
@@ -143,12 +144,12 @@ var ioConnection = function(socket)
         {
             case "down":
             {
-                players[playerID].dY = -playerSpeed;
+                players[playerID].dY = playerSpeed;
                 break;
             }
             case "up":
             {
-                players[playerID].dY = playerSpeed;
+                players[playerID].dY = -playerSpeed;
                 break;
             }
             case "left":
