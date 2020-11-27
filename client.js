@@ -16,6 +16,7 @@ var btnDown;
 var btnLeft;
 var btnRight;
 var btnUp;
+var background;
 
 function Initialisation()
 {
@@ -37,37 +38,32 @@ function Initialisation()
 
         document.body.addEventListener("touchcancel",TouchUp,false);
         
-        ResizeCanvas();
+        
         startTime = Date.now();
         
-        const verticalX = canvas.width/2;
+
         btnDown = new Sprite("/down.png");
-        //btnDown.SetDimensions(10,10);
-        btnDown.y = canvas.height - btnDown.Height();
-      
-      
-        //btnDown.y = (canvas.height - canvas.offsetTop);
-        btnDown.x = verticalX;
+
         
         btnLeft = new Sprite("/left.png");
-        btnLeft.x = verticalX - btnLeft.Width();
-        btnLeft.y = btnDown.y - (btnDown.Height()/2);
+
         
         btnRight = new Sprite("/right.png");
-        btnRight.x = verticalX + btnRight.Width();
-        btnRight.y = btnLeft.y;
+
         
         btnUp = new Sprite("/up.png");
-        btnUp.y = btnDown.y - btnUp.Height();
-        //btnUp.y = btnDown.y - btnUp.Height();
-        //btnUp.y = -(canvas.height-canvas.offsetTop);
-        btnUp.x = verticalX;
+
         
         controls["down"] = btnDown;
         controls["left"] = btnLeft;
         controls["right"] = btnRight;
         controls["up"] = btnUp;
         
+        background = new Sprite("/70ssiluette.png");
+        background.x = -(background.Width()/2);
+        background.y = -(background.Height()/2);
+        
+        ResizeCanvas();
         GameLoop();
     }
     socket = io();
@@ -85,24 +81,6 @@ function SetPlayer(id)
 
 function PosUpdate(id, x, y)
 {
-    /*if (thisPlayer != null && id === thisPlayer.playerID)
-    {
-        console.log("updated this player "+id);
-        if (thisPlayer != null)
-        {
-            thisPlayer.x = x;
-            thisPlayer.y = y;
-        }
-    }
-    else*/
-    if (id === thisID)
-    {
-        console.log("Updated this player");
-    }
-    else
-    {
-        console.log("Updated other player");
-    }
     
     if (players[id] != null)
     {
@@ -117,23 +95,6 @@ function PosUpdate(id, x, y)
 
 function VelUpdate(id, dX, dY)
 {
-    /*if (thisPlayer != null && id === thisPlayer.playerID)
-    {
-        if (thisPlayer != null)
-        {
-            thisPlayer.dX = dX;
-            thisPlayer.dY = dY;
-        }
-    }
-    else*/
-    if (id === thisID)
-    {
-        console.log("Updated this player");
-    }
-    else
-    {
-        console.log("Updated other player");
-    } 
     
     if (players[id] != null)
     {
@@ -283,19 +244,13 @@ function Render()
         var cX = (canvas.width - canvas.offsetLeft) / 2;
         var cY = (canvas.height - canvas.offsetTop) / 2;
         canvasContext.translate(cX-thisPlayer.x, cY-thisPlayer.y);
+        background.Render();
         thisPlayer.Render();
     }
-    /*
-    if (thisPlayer != null)
+    else
     {
-        //thisPlayer.RenderCustom(canvas.width/2, canvas.height/2);
-        thisPlayer.RenderCustom((canvas.width - canvas.offsetLeft) /2, (canvas.height - canvas.offsetTop)/2);
-        //thisPlayer.RenderCustom(0,0);
-        canvasContext.translate(thisPlayer.x, thisPlayer.y);
-        //thisPlayer.RenderCustom(0,0);
+        background.Render();
     }
-    
-    */
     for (let p in players)
     {
         if (p != thisID)
@@ -314,6 +269,20 @@ function ResizeCanvas()
 {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
+    
+    const verticalX = canvas.width/2;
+    
+    btnDown.y = canvas.height - btnDown.Height();
+    btnDown.x = verticalX;
+    
+    btnLeft.x = verticalX - btnLeft.Width();
+    btnLeft.y = btnDown.y - (btnDown.Height()/2);
+    
+    btnRight.x = verticalX + btnRight.Width();
+    btnRight.y = btnLeft.y;
+    
+    btnUp.y = btnDown.y - btnUp.Height();
+    btnUp.x = verticalX;
 }
 
 function GetMousePosition(mouseEvent)
