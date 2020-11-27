@@ -230,8 +230,6 @@ function Update(delta)
     {
         players[p].Update(delta);
     }
-    //btnUp.y += 3 * delta;
-    //console.log("btnUp.y: "+btnUp.y+" canvas.height: "+canvas.height);
 }
 
 function Render()
@@ -301,6 +299,7 @@ function GetTouchPosition(touchEvent)
 
 var blep = true;
 
+var shootDistance = 150;
 function DownInteraction(pos)
 {
     mouseDown = true;
@@ -308,13 +307,25 @@ function DownInteraction(pos)
     {
         return;
     }
+    var controlClicked = false;
     for (let c in controls)
     {
         if (controls[c].Click(pos))
         {
             console.log(c+" clicked");
             socket.emit("dirclick",c);
+            controlClicked = true;
             break;
+        }
+    }
+    if (!controlClicked)
+    {
+        var x2 = (pos.x - players[thisID].x) * (pos.x - players[thisID].x);
+        var y2 = (pos.y - players[thisID].y) * (pos.y - players[thisID].y);
+        var d2 = x2 + y2;
+        if (d2 <= shootDistance*shootDistance)
+        {
+            
         }
     }
     MoveInteraction(pos);
