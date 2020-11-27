@@ -27,37 +27,9 @@ var miscURL = function(req,res)
 
 app.get("/*",miscURL);
 
-function SendPage(path, socket)
-{
-    var fileRead = function(err, data)
-    {
-        if (err)
-        {
-            console.log(err);
-            socket.emit("pageContents",err);
-        }
-        else
-        {
-            //console.log(data);
-            socket.emit("pageContents", data);
-        }
-    };
-    fs.readFile(path,"utf8",fileRead);
-}
-
 var ioConnection = function(socket)
 {
     console.log("Client connected.");
-    SendPage("./intro.html", socket);
-    
-    var startGame = function(nickname)
-    {
-        SendPage("./maingame.html",socket);
-        console.log(nickname);
-        socket.emit("nickname",nickname);
-    };
-    
-    socket.on("startgame", startGame);
     
     var ioDisconnection = function()
     {
