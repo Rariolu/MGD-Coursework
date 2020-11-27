@@ -32,12 +32,12 @@ class ServerPlayer
         {
             case "down":
             {
-                this.dY = state ? -this.v : 0;
+                this.dY = state ? this.v : 0;
                 break;
             }
             case "up":
             {
-                this.dY = state ? this.v : 0;
+                this.dY = state ? -this.v : 0;
                 break;
             }
             case "left":
@@ -55,35 +55,6 @@ class ServerPlayer
     {
         var prevX = this.x;
         var prevY = this.y;
-        /*for (let c in this.controls)
-        {
-            if (this.controls[c])
-            {
-                switch(c)
-                {
-                    case "up":
-                    {
-                        this.y -= delta * this.dY;
-                        break;
-                    }
-                    case "down":
-                    {
-                        this.y += delta * this.dY;
-                        break;
-                    }
-                    case "left":
-                    {
-                        this.x -= delta * this.dX;
-                        break;
-                    }
-                    case "right":
-                    {
-                        this.x += delta * this.dX;
-                        break;
-                    }
-                }
-            }
-        }*/
         this.x += this.dX * delta;
         this.y += this.dY * delta;
         if (this.x != prevX || this.y != prevY)
@@ -119,7 +90,7 @@ function PlayerSpawn(id)
 {
     var player = new ServerPlayer(id);
     players[id] = player;
-    io.emit("spawn",player);
+    io.emit("spawn", player);
 }
 
 function PlayerDespawn(id)
@@ -131,14 +102,16 @@ function PlayerDespawn(id)
 const playerSpeed = 100;
 var ioConnection = function(socket)
 {
+    
     console.log("Client connected.");
     var playerID = playerCount++;
     SpawnExistingPlayers(socket);
     PlayerSpawn(playerID);
+    socket.emit("setplayer",playerID);
     
     var dirClick = function(btnID)
     {
-        console.log(btnID);
+        console.log(playerID+" pressed "+ btnID);
         players[playerID].ControlChange(btnID, true);
         switch(btnID)
         {
