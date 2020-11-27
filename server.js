@@ -13,54 +13,55 @@ var runGame = true;
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
-class ServerPlayer
+class GameEntity
 {
-    constructor(id)
+    constructor()
     {
-        this.playerID = id;
-        this.controls = [];
         this.x = 0;
         this.y = 0;
         this.dX = 0;
         this.dY = 0;
-        this.v = 50;
+    }
+    Update(delta)
+    {
+        this.x += this.dX * delta;
+        this.y += this.dY * delta;
+    }
+}
+
+class ServerPlayer extends GameEntity
+{
+    constructor(id)
+    {
+        super();
+        this.playerID = id;
+        this.controls = [];
     }
     ControlChange(name, state)
     {
         this.controls[name] = state;
-        switch(name)
-        {
-            case "down":
-            {
-                this.dY = state ? this.v : 0;
-                break;
-            }
-            case "up":
-            {
-                this.dY = state ? -this.v : 0;
-                break;
-            }
-            case "left":
-            {
-                this.dX = state ? -this.v : 0;
-            }
-            case "right":
-            {
-                this.dX = state? this.v : 0;
-                break;
-            }
-        }
     }
     Update(delta)
     {
         var prevX = this.x;
         var prevY = this.y;
-        this.x += this.dX * delta;
-        this.y += this.dY * delta;
+        super.Update(delta);
         if (this.x != prevX || this.y != prevY)
         {
             io.emit("posupdate",this.playerID,this.x,this.y);
         }
+    }
+}
+
+class ServerBullet extends GameEntity
+{
+    constructor(pos, dir)
+    {
+        super();
+        this.x = pos.x;
+        this.y = pos.y;
+        this.dX = dir.x;
+        this.dY = dir.y;
     }
 }
 
@@ -163,6 +164,13 @@ var ioConnection = function(socket)
     };
     
     socket.on("dirunclick", dirUnClick);
+    
+    var shotFired = function(pos, dir)
+    {
+        
+    };
+    
+    socket.on("shotfired", shotFired);
     
     var ioDisconnection = function()
     {
