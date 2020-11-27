@@ -1,23 +1,9 @@
 <!DOCTYPE html>
 <html>
     <head>
+        <script src="/jquery-3.5.1.min.js"></script>
         <script src="/socket.io/socket.io.js"></script>
         <script src="/client.js"></script>
-        <!--<script type="text/javascript">
-            var socket;
-            function Load()
-            {
-                socket = io();
-                
-                socket.on("pageContents",LoadPageContents);
-            }
-            function LoadPageContents(page)
-            {
-                /*var text = ArrayBufferToString(page);
-                console.log(text);*/
-                document.getElementById("main thing").innerHTML = page;
-            }
-        </script>-->
     </head>
     <body onload="Initialisation();">
         <div id="top banner" width="100" height="20">

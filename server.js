@@ -17,6 +17,8 @@ class ServerPlayer
     {
         this.playerID = id;
         this.playerNickname = nickname;
+        this.x = 0;
+        this.y = 0;
     }
 }
 
@@ -67,24 +69,74 @@ function PlayerSpawn(id, nickname)
     io.emit("spawn", player);
 }
 
+function PlayerDespawn(id)
+{
+    delete players[id];
+    io.emit("despawn",id);
+}
+
 var ioConnection = function(socket)
 {
     console.log("Client connected.");
+    var playerCreated = false;
+    var playerID;
+    var playerNickname;
     SendPage("./intro.html", socket);
     
     var startGame = function(nickname)
     {
         SendPage("./maingame.html",socket);
-        console.log(nickname);
-        socket.emit("nickname",nickname);
+        playerNickname = nickname;
+        playerID = playerCount++;
+        SpawnExistingPlayers(socket);
+        PlayerSpawn(playerID, nickname);
+        playerCreated = true;
+        //socket.emit("waitforelement","cvsGame");
     };
     
     socket.on("startgame", startGame);
     
+    var elementLoaded = function(id)
+    {
+        console.log(id+" loaded");
+        switch(id)
+        {
+            case "cvsGame":
+            {
+                socket.emit("begingameloop");
+                /*if (!playerCreated)
+                {
+                    playerID = playerCount++;
+                    SpawnExistingPlayers(socket);
+                    PlayerSpawn(playerID, playerNickname);
+                    playerCreated = true;
+                }*/
+                break;
+            }
+        }
+    };
+    
+    socket.on("elementloaded", elementLoaded);
+    
+    
+    /*var gamePageLoaded = function()
+    {
+        playerID = playerCount++;
+        SpawnExistingPlayers(socket);
+        PlayerSpawn(playerID, nickname);
+        playerCreated = true;
+    }
+    
+    socket.on("gamepageloaded", gamePageLoaded);*/
+    
     var ioDisconnection = function()
     {
         console.log("Client disconnected.");
-        
+        if (playerCreated)
+        {
+            PlayerDespawn(playerID);
+            playerCreated = false;
+        }
     };
     socket.on("disconnect",ioDisconnection);
 };
