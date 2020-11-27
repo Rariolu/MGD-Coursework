@@ -111,7 +111,7 @@ var ioConnection = function(socket)
     
     var dirClick = function(btnID)
     {
-        console.log(playerID+" pressed "+ btnID);
+        //console.log(playerID+" pressed "+ btnID);
         players[playerID].ControlChange(btnID, true);
         switch(btnID)
         {
