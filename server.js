@@ -6,9 +6,13 @@ var fs = require("fs");
 const bodyParser = require('body-parser');
 
 var playerCount = 0;
+var bulletCount = 0;
 var players = [];
+var bullets = [];
 var prevTime;
 var runGame = true;
+const bulletRange = 500;
+const bulletSpeed = 30;
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
@@ -55,13 +59,32 @@ class ServerPlayer extends GameEntity
 
 class ServerBullet extends GameEntity
 {
-    constructor(pos, dir)
+    constructor(id, pos, dir)
     {
         super();
+        this.bulletID = id;
+        this.originalPosition = pos;
         this.x = pos.x;
         this.y = pos.y;
-        this.dX = dir.x;
-        this.dY = dir.y;
+        this.dX = dir.x * bulletSpeed;
+        this.dY = dir.y * bulletSpeed;
+    }
+    Update(delta)
+    {
+        var prevX = this.x;
+        var prevY = this.y;
+        super.Update(delta);
+        if (this.x != prevX || this.y != prevY)
+        {
+            io.emit("bulletupdate",this.bulletID,this.x,this.y);
+        }
+    }
+    OutsideRange()
+    {
+        var x2 = (this.x - this.originalPosition.x) * (this.x - this.originalPosition.x);
+        var y2 = (this.y - this.originalPosition.y) * (this.y - this.originalPosition.y);
+        var d2 = x2 + y2;
+        return d2 >= bulletRange;
     }
 }
 
@@ -164,10 +187,13 @@ var ioConnection = function(socket)
     };
     
     socket.on("dirunclick", dirUnClick);
-    
+     
     var shotFired = function(pos, dir)
     {
-        
+        var bulletID = bulletCount++;
+        var bullet = new ServerBullet(bulletID, pos, dir);
+        bullets[bulletID] =  bullet;
+        io.emit("bulletcreated",bullet);
     };
     
     socket.on("shotfired", shotFired);
@@ -190,11 +216,25 @@ var gameLoop = function()
     }
 };
 
+function DestroyBullet(id)
+{
+    delete bullets[id];
+    io.emit("bulletdestroyed",id);
+}
+
 function Update()
 {
     var currentTime = Date.now();
     var delta = (currentTime - prevTime) / 1000;
     prevTime = currentTime;
+    for (let b in bullets)
+    {
+        bullets[b].Update(delta);
+        if (bullets[b].OutsideRange())
+        {
+            DestroyBullet(b);
+        }
+    }
     for (let p in players)
     {
         players[p].Update(delta);
