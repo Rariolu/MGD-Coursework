@@ -17,6 +17,9 @@ var btnLeft;
 var btnRight;
 var btnUp;
 var background;
+var bullets = [];
+const shootDistance = 150;
+var images = {};
 
 function Initialisation()
 {
@@ -41,27 +44,33 @@ function Initialisation()
         
         startTime = Date.now();
         
+        AddImage("btnDown","/down.png");
+        AddImage("btnLeft","/left.png");
+        AddImage("btnRight","/right.png");
+        AddImage("btnUp","/up.png");
+        AddImage("player","/70sRowlette.png");
+        AddImage("bullet","/bullet.png");
+        AddImage("background","/70ssiluette.png");
 
-        btnDown = new Sprite("/down.png");
-
-        
+        /*btnDown = new Sprite("/down.png");
         btnLeft = new Sprite("/left.png");
-
-        
         btnRight = new Sprite("/right.png");
-
+        btnUp = new Sprite("/up.png");*/
         
-        btnUp = new Sprite("/up.png");
-
+        btnDown = new Sprite("btnDown");
+        btnLeft = new Sprite("btnLeft");
+        btnRight = new Sprite("btnRight");
+        btnUp = new Sprite("btnUp");
         
         controls["down"] = btnDown;
         controls["left"] = btnLeft;
         controls["right"] = btnRight;
         controls["up"] = btnUp;
         
-        background = new Sprite("/70ssiluette.png");
-        background.x = -(background.Width()/2);
-        background.y = -(background.Height()/2);
+        background = new Sprite("background");
+        //background = new Sprite("/70ssiluette.png");
+        //background.x = -(background.Width()/2);
+        //background.y = -(background.Height()/2);
         
         ResizeCanvas();
         GameLoop();
@@ -72,6 +81,43 @@ function Initialisation()
     socket.on("posupdate", PosUpdate);
     socket.on("velupdate", VelUpdate);
     socket.on("setplayer", SetPlayer);
+    socket.on("bulletcreated", BulletCreated);
+    socket.on("bulletdestroyed", BulletDestroyed);
+    socket.on("bulletupdate", BulletUpdate);
+}
+
+function AddImage(name, src)
+{
+    var img = new Image();
+    img.src = src;
+    images[name] = img;
+}
+
+function GetImage(name)
+{
+    return images[name];
+}
+
+function BulletUpdate(id, x, y)
+{
+    console.log("attempting to update "+id);
+    if (bullets[id] != null)
+    {
+        bullets[id].x = x;
+        bullets[id].y = y;
+    }
+}
+
+function BulletCreated(serverBullet)
+{
+    console.log("bullet created "+serverBullet.bulletID);
+    var bullet = new ClientBullet(serverBullet);
+    bullets[bullet.bulletID] = bullet;
+}
+
+function BulletDestroyed(id)
+{
+    delete bullets[id];
 }
 
 function SetPlayer(id)
@@ -111,8 +157,9 @@ class Sprite
 {
     constructor(imagePath)
     {
-        this.image = new Image();
-        this.image.src = imagePath;
+        //this.image = new Image();
+        //this.image.src = imagePath;
+        this.imageName = imagePath;
         this.x = 0;
         this.y = 0;
         this.dX = 0;
@@ -120,11 +167,15 @@ class Sprite
         this.useImageWidth = true;
         this.useImageHeight = true;
     }
+    GetImage()
+    {
+        return GetImage(this.imageName);
+    }
     Width()
     {
         if (this.useImageWidth)
         {
-            return this.image.width;
+            return this.GetImage().width;
         }
         return this.width;
     }
@@ -132,7 +183,7 @@ class Sprite
     {
         if (this.useImageHeight)
         {
-            return this.image.height;
+            return this.GetImage().height;
         }
         return this.height;
     }
@@ -159,27 +210,28 @@ class Sprite
     }
     Left()
     {
-        return this.x;
+        return this.x - (this.Width()/2);
     }
     Right()
     {
-        return this.x + this.Width();
+        return this.x + (this.Width()/2);
     }
     Bottom()
     {
-        return this.y;
+        return this.y - (this.Height()/2);
     }
     Top()
     {
-        return this.y + this.Height();
+        return this.y + (this.Height()/2);
     }
     Render()
     {
-        canvasContext.drawImage(this.image, this.x, this.y, this.Width(), this.Height());
+        //canvasContext.drawImage(this.image, this.Left(), this.Bottom(), this.Width(), this.Height());
+        canvasContext.drawImage(this.GetImage(), this.Left(), this.Bottom(), this.Width(), this.Height());
     }
     RenderCustom(rX, rY)
     {
-        canvasContext.drawImage(this.image, rX, rY, this.Width(), this.Height());
+        canvasContext.drawImage(this.GetImage(), rX, rY, this.Width(), this.Height());
     }
     Update(delta)
     {
@@ -192,12 +244,43 @@ class ClientPlayer extends Sprite
 {
     constructor(serverPlayer)
     {
-        super("70sRowlette.png");
+        super("player");
+        //super("70sRowlette.png");
         this.x = serverPlayer.x;
         this.y = serverPlayer.y;
         this.dX = serverPlayer.dX;
         this.dY = serverPlayer.dY;
         this.playerID = serverPlayer.playerID;
+        this.frameX = 0;
+        this.frameY = 0;
+    }
+    AnimationFrame(delta)
+    {
+        
+    }
+    /*Render()
+    {
+        
+    }*/
+    Update(delta)
+    {
+        super.Update(delta);
+        this.AnimationFrame(delta);
+    }
+}
+
+class ClientBullet extends Sprite   
+{
+    constructor(serverBullet)
+    {
+        super("bullet");
+        //super("/bullet.png");
+        this.x = serverBullet.x;
+        this.y = serverBullet.y;
+        this.dX = serverBullet.dX;
+        this.dY = serverBullet.dY;
+        console.log("dX: "+this.dX+"; dY: "+this.dY);
+        this.bulletID = serverBullet.bulletID;
     }
 }
 
@@ -230,6 +313,10 @@ function Update(delta)
     {
         players[p].Update(delta);
     }
+    for (let b in bullets)
+    {
+        bullets[b].Update(delta);
+    }
 }
 
 function Render()
@@ -255,6 +342,10 @@ function Render()
         {
             players[p].Render();
         }
+    }
+    for (let b in bullets)
+    {
+        bullets[b].Render();
     }
     canvasContext.restore();
     for (let c in controls)
@@ -299,7 +390,7 @@ function GetTouchPosition(touchEvent)
 
 var blep = true;
 
-var shootDistance = 150;
+
 function DownInteraction(pos)
 {
     mouseDown = true;
@@ -325,11 +416,17 @@ function DownInteraction(pos)
         var x2 = (pos.x - x) * (pos.x - x);
         var y2 = (pos.y - y) * (pos.y - y);
         var d2 = x2 + y2;
-        if (d2 <= shootDistance*shootDistance)
+        if (true)//(d2 <= (shootDistance*shootDistance))
         {
-            var v1 = new Vector(pos.x - x, pos.y - y);
-            v1.normalize();
-            socket.emit("shotfired",{x,y}, v1);
+            console.log("shot attempt");
+            //var v1 = new Vector(pos.x - x, pos.y - y);
+            //v1 = v1.normalize();
+            var v1 = {x:1, y:0};
+            socket.emit("shotfired",{x,y}, {x:v1.x, y:v1.y});
+        }
+        else
+        {
+            console.log("d2: "+d2+" sd: "+(shootDistance*shootDistance));
         }
     }
     MoveInteraction(pos);
@@ -346,6 +443,7 @@ Vector.prototype.normalize = function()
     var length = Math.sqrt(this.x*this.x+this.y*this.y); //calculating length
     this.x = this.x/length; //assigning new value to x (dividing x by length of the vector)
     this.y= this.y/length; //assigning new value to y
+    return this;
 }
 
 
