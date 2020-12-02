@@ -21,6 +21,7 @@ var bullets = [];
 const shootDistance = 150;
 var images = {};
 const playerSpeed = 100;
+var coins = {};
 
 function Initialisation()
 {
@@ -42,6 +43,8 @@ function Initialisation()
 
         document.body.addEventListener("touchcancel",TouchUp,false);
         
+        document.body.addEventListener("keydown", KeyDown);
+        document.body.addEventListener("keyup",KeyUp);
         
         startTime = Date.now();
         
@@ -121,7 +124,73 @@ function Initialisation()
     socket.on("coindespawn", CoinDelete);
 }
 
-var coins = {};
+function KeyDown(e)
+{
+    switch(e.keyCode)
+    {
+        case 83: //S
+        case 40: //Down
+        {
+            socket.emit("dirclick","down");
+            break;
+        }
+        case 65: //A
+        case 37: //Left
+        {
+            socket.emit("dirclick","left");
+            break;
+        }
+        case 68: //D
+        case 39: //Right
+        {
+            socket.emit("dirclick","right");
+            break;
+        }
+        case 87: //W
+        case 38: //Up
+        {
+            socket.emit("dirclick","up");
+            break;
+        }
+    }
+    
+}
+
+
+function KeyUp(e)
+{
+    switch(e.keyCode)
+    {
+        case 83: //S
+        case 40: //Down
+        {
+            socket.emit("dirunclick","down");
+            break;
+        }
+        case 65: //A
+        case 37: //Left
+        {
+            socket.emit("dirunclick","left");
+            break;
+        }
+        case 68: //D
+        case 39: //Right
+        {
+            socket.emit("dirunclick","right");
+            break;
+        }
+        case 87: //W
+        case 38: //Up
+        {
+            socket.emit("dirunclick","up");
+            break;
+        }
+    }
+    
+}
+
+
+
 
 function CoinSpawn(serverCoin)
 {
