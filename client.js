@@ -48,7 +48,8 @@ function Initialisation()
         AddImage("btnLeft","/left.png");
         AddImage("btnRight","/right.png");
         AddImage("btnUp","/up.png");
-        AddImage("player","/70sRowlette.png");
+        //AddImage("player","/70sRowlette.png");
+        AddImage("player","/starly.png");
         AddImage("bullet","/bullet.png");
         AddImage("background","/70ssiluette.png");
 
@@ -253,15 +254,44 @@ class ClientPlayer extends Sprite
         this.playerID = serverPlayer.playerID;
         this.frameX = 0;
         this.frameY = 0;
+        this.frameXMax = 0.5;
+        this.frameTimer = this.frameXMax;
     }
     AnimationFrame(delta)
     {
-        
+        this.frameTimer -= delta;
+        if (this.frameTimer <= 0)
+        {
+            this.frameTimer = this.frameXMax;
+            this.frameX++;
+            this.frameX = this.frameX % 3;
+            console.log(this.frameX);
+        }
     }
-    /*Render()
+    Render()
     {
-        
-    }*/
+        if (this.dX < 0)
+        {
+            this.frameY = 2;
+        }
+        else if (this.dX > 0)
+        {
+            this.frameY = 3;
+        }
+        else if (this.dY < 0)
+        {
+            this.frameY = 1;
+        }
+        else
+        {
+            this.frameY = 0;
+        }
+        const spriteWidth = 20;
+        const spriteHeight = 35;
+        var tempX = spriteWidth * this.frameX;
+        var tempY = spriteHeight * this.frameY;
+        canvasContext.drawImage(this.GetImage(), tempX, tempY, spriteWidth, spriteHeight, this.Left(), this.Bottom(), 200, 350);
+    }
     Update(delta)
     {
         super.Update(delta);
@@ -432,7 +462,7 @@ function DownInteraction(pos)
     MoveInteraction(pos);
 }
 
-var Vector = function(x,y) 
+var Vector = function(x,y)
 {
     this.x = x;
     this.y = y;
