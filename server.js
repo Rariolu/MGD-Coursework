@@ -13,6 +13,14 @@ var prevTime;
 var runGame = true;
 const bulletRange = 500;
 const bulletSpeed = 30;
+const coinSpawnProb = 0.005;
+var coinCount = 0;
+var coins = {};
+var minX = -2000;
+var maxX = 2000;
+var minY = -2000;
+var maxY = 2000;
+
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
@@ -88,6 +96,17 @@ class ServerBullet extends GameEntity
     }
 }
 
+class ServerCoin extends GameEntity
+{
+    constructor(id, pos)
+    {
+        super();
+        this.coinID = id;
+        this.x = pos.x;
+        this.y = pos.y;
+    }
+}
+
 var introScreen = function(req, res)
 {
     res.sendFile(__dirname+"/index.html");
@@ -160,6 +179,7 @@ var ioConnection = function(socket)
                 break;
             }
         }
+        
         socket.emit("velupdate",playerID, players[playerID].dX, players[playerID].dY);
     };
     
@@ -222,11 +242,32 @@ function DestroyBullet(id)
     io.emit("bulletdestroyed",id);
 }
 
+function CreateCoin()
+{
+    var coinID = coinCount++;
+    var posX = Math.floor(Math.random() * maxX) + minX;
+    var posY = Math.floor(Math.random() * maxY) + minY;
+    var pos = {x:posX, y:posY};
+    var coin = new ServerCoin(coinID,pos);
+    coins[coinID] = coin;
+    io.emit("coinspawn", coin);
+}
+
+function DestroyCoin(id)
+{
+    delete coins[id];
+    io.emit("coindespawn",id);
+}
+
 function Update()
 {
     var currentTime = Date.now();
     var delta = (currentTime - prevTime) / 1000;
     prevTime = currentTime;
+    if (Math.random() < coinSpawnProb)
+    {
+        CreateCoin();
+    }
     for (let b in bullets)
     {
         bullets[b].Update(delta);

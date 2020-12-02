@@ -20,6 +20,7 @@ var background;
 var bullets = [];
 const shootDistance = 150;
 var images = {};
+const playerSpeed = 100;
 
 function Initialisation()
 {
@@ -52,16 +53,47 @@ function Initialisation()
         AddImage("player","/starly.png");
         AddImage("bullet","/bullet.png");
         AddImage("background","/70ssiluette.png");
-
-        /*btnDown = new Sprite("/down.png");
-        btnLeft = new Sprite("/left.png");
-        btnRight = new Sprite("/right.png");
-        btnUp = new Sprite("/up.png");*/
+        AddImage("coin","/coin.png");
         
         btnDown = new Sprite("btnDown");
+        btnDown.clickEvent = function()
+        {
+            players[thisID].dY = playerSpeed;
+        };
+        btnDown.mouseUp = function()
+        {
+            players[thisID].dY = 0;
+        };
+        
         btnLeft = new Sprite("btnLeft");
+        btnLeft.clickEvent = function()
+        {
+            players[thisID].dX = -playerSpeed;
+        };
+        btnLeft.mouseUp = function()
+        {
+            players[thisID].dX = 0;
+        };
+        
         btnRight = new Sprite("btnRight");
+        btnRight.clickEvent = function()
+        {
+            players[thisID].dX = playerSpeed;
+        };
+        btnRight.mouseUp = function()
+        {
+            players[thisID].dX = 0;
+        };
+        
         btnUp = new Sprite("btnUp");
+        btnUp.clickEvent = function()
+        {
+            players[thisID].dY = -playerSpeed;
+        };
+        btnUp.mouseUp = function()
+        {
+            players[thisID].dY = 0;
+        };
         
         controls["down"] = btnDown;
         controls["left"] = btnLeft;
@@ -85,6 +117,21 @@ function Initialisation()
     socket.on("bulletcreated", BulletCreated);
     socket.on("bulletdestroyed", BulletDestroyed);
     socket.on("bulletupdate", BulletUpdate);
+    socket.on("coinspawn", CoinSpawn);
+    socket.on("coindespawn", CoinDelete);
+}
+
+var coins = {};
+
+function CoinSpawn(serverCoin)
+{
+    var coin = new ClientCoin(serverCoin);
+    coins[serverCoin.coinID] = coin;
+}
+
+function CoinDelete(id)
+{
+    delete coins[id];
 }
 
 function AddImage(name, src)
@@ -142,15 +189,17 @@ function PosUpdate(id, x, y)
 
 function VelUpdate(id, dX, dY)
 {
-    
-    if (players[id] != null)
+    //if (id != thisID)
     {
-        players[id].dX = dX;
-        players[id].dY = dY;
-    }
-    else
-    {
-        console.log("Apparently a player doesn't exist: "+id);
+        if (players[id] != null)
+        {
+            players[id].dX = dX;
+            players[id].dY = dY;
+        }
+        else
+        {
+            console.log("Apparently a player doesn't exist: "+id);
+        }
     }
 }
 
@@ -158,6 +207,8 @@ class Sprite
 {
     constructor(imagePath)
     {
+        this.clickEvent = null;
+        this.mouseUp = null;
         //this.image = new Image();
         //this.image.src = imagePath;
         this.imageName = imagePath;
@@ -207,7 +258,12 @@ class Sprite
     {
         var clickX = pos.x >= this.Left() && pos.x <= this.Right();
         var clickY = pos.y >= this.Bottom() && pos.y <= this.Top();
-        return clickX && clickY;
+        var clicked = clickX && clickY;
+        if (clicked && this.clickEvent != null)
+        {
+            this.clickEvent();
+        }
+        return clicked;
     }
     Left()
     {
@@ -265,7 +321,6 @@ class ClientPlayer extends Sprite
             this.frameTimer = this.frameXMax;
             this.frameX++;
             this.frameX = this.frameX % 3;
-            console.log(this.frameX);
         }
     }
     Render()
@@ -311,6 +366,17 @@ class ClientBullet extends Sprite
         this.dY = serverBullet.dY;
         console.log("dX: "+this.dX+"; dY: "+this.dY);
         this.bulletID = serverBullet.bulletID;
+    }
+}
+
+class ClientCoin extends Sprite
+{
+    constructor(serverCoin)
+    {
+        super("coin");
+        this.x = serverCoin.x;
+        this.y = serverCoin.y;
+        this.coinID = serverCoin.coinID;
     }
 }
 
@@ -377,6 +443,10 @@ function Render()
     {
         bullets[b].Render();
     }
+    for (let c in coins)
+    {
+        coins[c].Render();
+    }
     canvasContext.restore();
     for (let c in controls)
     {
@@ -391,17 +461,17 @@ function ResizeCanvas()
     
     const verticalX = canvas.width/2;
     
-    btnDown.y = canvas.height - btnDown.Height();
-    btnDown.x = verticalX;
+    controls["down"].y = canvas.height - btnDown.Height();
+    controls["down"].x = verticalX;
     
-    btnLeft.x = verticalX - btnLeft.Width();
-    btnLeft.y = btnDown.y - (btnDown.Height()/2);
+    controls["left"].x = verticalX - btnLeft.Width();
+    controls["left"].y = btnDown.y - (btnDown.Height()/2);
     
-    btnRight.x = verticalX + btnRight.Width();
-    btnRight.y = btnLeft.y;
+    controls["right"].x = verticalX + btnRight.Width();
+    controls["right"].y = btnLeft.y;
     
-    btnUp.y = btnDown.y - btnUp.Height();
-    btnUp.x = verticalX;
+    controls["up"].y = btnDown.y - btnUp.Height();
+    controls["up"].x = verticalX;
 }
 
 function GetMousePosition(mouseEvent)
@@ -488,6 +558,10 @@ function UpInteraction(pos)
     for (let c in controls)
     {
         socket.emit("dirunclick",c);
+        if (controls[c].mouseUp != null)
+        {
+            controls[c].mouseUp();
+        }
     }
 }
 
