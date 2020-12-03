@@ -7,21 +7,36 @@ var canvas;
 var canvasContext;
 var startTime;
 var lastPoint = null;
-var players = [];
+var players = {};
 var thisID;
 //var thisPlayer;
 var gameOver = false;
-var controls = [];
+var controls = {};
 var btnDown;
 var btnLeft;
 var btnRight;
 var btnUp;
 var background;
-var bullets = [];
+var bullets = {};
 const shootDistance = 150;
 var images = {};
 const playerSpeed = 100;
 var coins = {};
+var connections = 0;
+var playerScore = 0;
+
+//Images
+const imgDown = "/down.png";
+const imgLeft = "/left.png";
+const imgRight = "/right.png";
+const imgUp = "/up.png";
+const imgBullet = "/bullet.png";
+const imgBackground = "/70ssiluette.png";
+const imgCoin = "/coin.png";
+const imgStarlyDown = "/Starly/starly_down_";
+const imgStarlyLeft = "/Starly/starly_left_";
+const imgStarlyRight = "/Starly/starly_right_";
+const imgStarlyUp = "/Starly/starly_up_";
 
 function Initialisation()
 {
@@ -48,15 +63,23 @@ function Initialisation()
         
         startTime = Date.now();
         
-        AddImage("btnDown","/down.png");
-        AddImage("btnLeft","/left.png");
-        AddImage("btnRight","/right.png");
-        AddImage("btnUp","/up.png");
+        AddImage("btnDown",imgDown);
+        AddImage("btnLeft",imgLeft);
+        AddImage("btnRight",imgRight);
+        AddImage("btnUp",imgUp);
         //AddImage("player","/70sRowlette.png");
-        AddImage("player","/starly.png");
-        AddImage("bullet","/bullet.png");
-        AddImage("background","/70ssiluette.png");
-        AddImage("coin","/coin.png");
+        //AddImage("player","/starly.png");
+        AddImage("bullet",imgBullet);
+        AddImage("background", imgBackground);
+        AddImage("coin", imgCoin);
+        
+        for (var i = 0; i < 3; i++)
+        {
+            AddImage("starly_down_"+i, imgStarlyDown + i + ".png");
+            AddImage("starly_left_"+i,imgStarlyLeft + i + ".png");
+            AddImage("starly_right_"+i, imgStarlyRight + i + ".png");
+            AddImage("starly_up_"+i, imgStarlyUp + i + ".png");
+        }
         
         btnDown = new Sprite("btnDown");
         btnDown.clickEvent = function()
@@ -104,14 +127,12 @@ function Initialisation()
         controls["up"] = btnUp;
         
         background = new Sprite("background");
-        //background = new Sprite("/70ssiluette.png");
-        //background.x = -(background.Width()/2);
-        //background.y = -(background.Height()/2);
         
         ResizeCanvas();
         GameLoop();
     }
     socket = io();
+    socket.on("serverconnect",ServerConnect);
     socket.on("spawn", PlayerSpawn);
     socket.on("despawn", PlayerDespawn);
     socket.on("posupdate", PosUpdate);
@@ -122,6 +143,23 @@ function Initialisation()
     socket.on("bulletupdate", BulletUpdate);
     socket.on("coinspawn", CoinSpawn);
     socket.on("coindespawn", CoinDelete);
+    socket.on("scorechanged", ScoreChanged);
+}
+
+function ScoreChanged(score)
+{
+    playerScore = score;
+}
+
+function ServerConnect()
+{
+    connections++;
+    if (connections > 1)
+    {
+        players = {};
+        bullets = {};
+        coins = {};
+    }
 }
 
 function KeyDown(e)
@@ -156,7 +194,6 @@ function KeyDown(e)
     
 }
 
-
 function KeyUp(e)
 {
     switch(e.keyCode)
@@ -188,9 +225,6 @@ function KeyUp(e)
     }
     
 }
-
-
-
 
 function CoinSpawn(serverCoin)
 {
@@ -244,7 +278,6 @@ function SetPlayer(id)
 
 function PosUpdate(id, x, y)
 {
-    
     if (players[id] != null)
     {
         players[id].x = x;
@@ -268,6 +301,44 @@ function VelUpdate(id, dX, dY)
         else
         {
             console.log("Apparently a player doesn't exist: "+id);
+        }
+    }
+}
+
+class AnimationManager
+{
+    constructor(name, iters, duration)
+    {
+        this.frameDuration = duration;
+        this.frameTimer = this.frameDuration;
+        this.frames = {};
+        this.frames["down"] = [];
+        this.frames["left"] = [];
+        this.frames["right"] = [];
+        this.frames["up"] = [];
+        for (var i = 0; i < iters; i++)
+        {
+            this.frames["down"][i] = name+"_down_"+i;
+            this.frames["left"][i] = name+"_left_"+i;
+            this.frames["right"][i] = name+"_right_"+i;
+            this.frames["up"][i] = name+"_up_"+i;
+        }
+        this.frame = 0;
+        this.frameCount = iters;
+    }
+    GetImage(dir)
+    {
+        var name = this.frames[dir][this.frame];
+        return GetImage(name);
+    }
+    Update(delta)
+    {
+        this.frameTimer -= delta;
+        if (this.frameTimer <= 0)
+        {
+            this.frame++;
+            this.frame = this.frame % this.frameCount;
+            this.frameTimer = this.frameDuration;
         }
     }
 }
@@ -370,7 +441,8 @@ class ClientPlayer extends Sprite
 {
     constructor(serverPlayer)
     {
-        super("player");
+        super("starly_down_0");
+        this.animManager = new AnimationManager("starly", 3, 0.5);
         //super("70sRowlette.png");
         this.x = serverPlayer.x;
         this.y = serverPlayer.y;
@@ -384,42 +456,43 @@ class ClientPlayer extends Sprite
     }
     AnimationFrame(delta)
     {
-        this.frameTimer -= delta;
+        /*this.frameTimer -= delta;
         if (this.frameTimer <= 0)
         {
             this.frameTimer = this.frameXMax;
             this.frameX++;
             this.frameX = this.frameX % 3;
-        }
+        }*/
     }
     Render()
     {
+        var dir = "down";
         if (this.dX < 0)
         {
-            this.frameY = 2;
+            dir = "left";
         }
         else if (this.dX > 0)
         {
-            this.frameY = 3;
+            dir = "right";
         }
         else if (this.dY < 0)
         {
-            this.frameY = 1;
+            dir = "up";
         }
-        else
-        {
-            this.frameY = 0;
-        }
+
         const spriteWidth = 20;
-        const spriteHeight = 35;
+        const spriteHeight = 20;
         var tempX = spriteWidth * this.frameX;
         var tempY = spriteHeight * this.frameY;
-        canvasContext.drawImage(this.GetImage(), tempX, tempY, spriteWidth, spriteHeight, this.Left(), this.Bottom(), 200, 350);
+        var img = this.animManager.GetImage(dir);
+        canvasContext.drawImage(img, this.Left(), this.Bottom(), 200, 200);
+        //canvasContext.drawImage(, tempX, tempY, spriteWidth, spriteHeight, this.Left(), this.Bottom(), 200, 350);
     }
     Update(delta)
     {
         super.Update(delta);
-        this.AnimationFrame(delta);
+        this.animManager.Update(delta);
+        //this.AnimationFrame(delta);
     }
 }
 
@@ -521,6 +594,8 @@ function Render()
     {
         controls[c].Render();
     }
+    StyleText("black","200px arial","centre","middle");
+    canvasContext.fillText("Score: " + playerScore, 10, 100);
 }
 
 function ResizeCanvas()
@@ -557,9 +632,6 @@ function GetTouchPosition(touchEvent)
     return {x:touchX, y:touchY};
 }
 
-var blep = true;
-
-
 function DownInteraction(pos)
 {
     mouseDown = true;
@@ -578,7 +650,7 @@ function DownInteraction(pos)
             break;
         }
     }
-    if (!controlClicked)
+    /*if (!controlClicked)
     {
         var x = players[thisID].x;
         var y = players[thisID].y;
@@ -598,6 +670,7 @@ function DownInteraction(pos)
             console.log("d2: "+d2+" sd: "+(shootDistance*shootDistance));
         }
     }
+    */
     MoveInteraction(pos);
 }
 
@@ -674,4 +747,12 @@ function TouchUp(evt)
     evt.preventDefault();
     var touchPos = GetTouchPosition();
     UpInteraction(touchPos);
+}
+
+function StyleText(colour, font, alignment, baseLine)
+{
+    canvasContext.fillStyle = colour;
+    canvasContext.font = font;
+    canvasContext.textAlign = alignment;
+    canvasContext.textBaseline = baseLine;
 }
