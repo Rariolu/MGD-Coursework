@@ -13,14 +13,15 @@ var prevTime;
 var runGame = true;
 const bulletRange = 500;
 const bulletSpeed = 30;
-const coinSpawnProb = 0.005;
+const coinSpawnProb = 0.0005;
 var coinCount = 0;
 var coins = {};
-var minX = -2000;
-var maxX = 2000;
-var minY = -2000;
-var maxY = 2000;
-
+const minX = -2000;
+const maxX = 2000;
+const minY = -2000;
+const maxY = 2000;
+const coinTime = 50;
+const coinRadius = 300;
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
@@ -47,11 +48,16 @@ class ServerPlayer extends GameEntity
     {
         super();
         this.playerID = id;
-        this.controls = [];
+        this.score = 0;
+        this.scoreChanged = null;
     }
-    ControlChange(name, state)
+    IncrementScore()
     {
-        this.controls[name] = state;
+        this.score++;
+        if (this.scoreChanged != null)
+        {
+            this.scoreChanged(this.score);
+        }
     }
     Update(delta)
     {
@@ -61,6 +67,31 @@ class ServerPlayer extends GameEntity
         if (this.x != prevX || this.y != prevY)
         {
             io.emit("posupdate",this.playerID,this.x,this.y);
+        }
+        for (let c in coins)
+        {
+            var coin = coins[c];
+            
+            var x2 = coin.x - this.x;
+            if (Math.abs(x2) <= coinRadius)
+            {
+                x2 *= x2;
+
+                var y2 = coin.y - this.y;
+                y2 *= y2;
+
+                var d2 = x2 + y2;
+                if (d2 <= coinRadius * coinRadius)
+                {
+                    this.IncrementScore();
+                    DestroyCoin(c);
+                    console.log(this.playerID+"'s score is "+this.score);
+                }
+                else if (d2 < 6000)
+                {
+                    console.log("d2: "+d2);
+                }
+            }
         }
     }
 }
@@ -104,6 +135,15 @@ class ServerCoin extends GameEntity
         this.coinID = id;
         this.x = pos.x;
         this.y = pos.y;
+        this.timeRemaining = coinTime;
+    }
+    Update(delta)
+    {
+        this.timeRemaining -= delta;
+        if (this.timeRemaining <= 0)
+        {
+            DestroyCoin(this.coinID);
+        }
     }
 }
 
@@ -129,11 +169,12 @@ function SpawnExistingPlayers(socket)
     }
 }
 
-function PlayerSpawn(id)
+function PlayerSpawn(id, socket)
 {
     var player = new ServerPlayer(id);
     players[id] = player;
     io.emit("spawn", player);
+    return player;
 }
 
 function PlayerDespawn(id)
@@ -142,20 +183,43 @@ function PlayerDespawn(id)
     io.emit("despawn",id);
 }
 
+function SpawnCoins(socket)
+{
+    for (let c in coins)
+    {
+        socket.emit("coinspawn",coins[c]);
+    }
+}
+
+function SpawnBullets(socket)
+{
+    for (let b in bullets)
+    {
+        socket.emit("bulletcreated",bullets[b]);
+    }
+}
+
 const playerSpeed = 100;
 var ioConnection = function(socket)
 {
     
     console.log("Client connected.");
+    socket.emit("serverconnect");
     var playerID = playerCount++;
     SpawnExistingPlayers(socket);
-    PlayerSpawn(playerID);
+    
+    var player = PlayerSpawn(playerID, socket);
+    var scoreChanged = function(score)
+    {
+        socket.emit("scorechanged", score);
+    }
+    player.scoreChanged = scoreChanged;
+    
+    SpawnCoins(socket);
     socket.emit("setplayer",playerID);
     
     var dirClick = function(btnID)
     {
-        //console.log(playerID+" pressed "+ btnID);
-        players[playerID].ControlChange(btnID, true);
         switch(btnID)
         {
             case "down":
@@ -187,7 +251,6 @@ var ioConnection = function(socket)
     
     var dirUnClick = function(btnID)
     {
-        players[playerID].ControlChange(btnID, false);
         switch(btnID)
         {
             case "down":
@@ -228,13 +291,7 @@ var ioConnection = function(socket)
 
 io.on("connection",ioConnection);
 
-var gameLoop = function()
-{
-    if (runGame)
-    {
-        Update();
-    }
-};
+
 
 function DestroyBullet(id)
 {
@@ -276,17 +333,29 @@ function Update()
             DestroyBullet(b);
         }
     }
+    for (let c in coins)
+    {
+        coins[c].Update(delta);
+    }
     for (let p in players)
     {
         players[p].Update(delta);
     }
 }
 
+var gameLoop = function()
+{
+    if (runGame)
+    {
+        Update();
+    }
+};
+
 var main = function()
 {
     console.log("Listening on 3000.");
     prevTime = Date.now();
-    setInterval(gameLoop,5);
+    setInterval(gameLoop, 5);
 }
 
 http.listen(3000,main);
