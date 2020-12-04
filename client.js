@@ -18,7 +18,7 @@ var gameOver = false;
 var controls = {};
 var background;
 var bullets = {};
-const shootDistance = 150;
+const shootDistance = 500;
 var images = {};
 //const playerSpeed = 100;
 var coins = {};
@@ -539,6 +539,7 @@ class ClientBullet extends Sprite
         //super("/bullet.png");
         this.x = serverBullet.x;
         this.y = serverBullet.y;
+        console.log("X: "+this.x+"; Y: "+this.y);
         this.dX = serverBullet.dX;
         this.dY = serverBullet.dY;
         console.log("dX: "+this.dX+"; dY: "+this.dY);
@@ -593,6 +594,8 @@ function Update(delta)
     }
 }
 
+var cameraTranslation = {x:0, y:0};
+
 function Render()
 {
     canvasContext.clearRect(0, 0, canvas.width, canvas.height);
@@ -602,7 +605,9 @@ function Render()
     {
         var cX = (canvas.width - canvas.offsetLeft) / 2;
         var cY = (canvas.height - canvas.offsetTop) / 2;
-        canvasContext.translate(cX-thisPlayer.x, cY-thisPlayer.y);
+        cameraTranslation.x = cX - thisPlayer.x;
+        cameraTranslation.y = cY - thisPlayer.y;
+        canvasContext.translate(cameraTranslation.x, cameraTranslation.y);
         background.Render();
         thisPlayer.Render();
     }
@@ -677,9 +682,15 @@ function GetTouchPosition(touchEvent)
     return {x:touchX, y:touchY};
 }
 
+function RemoveCameraTranslation(pos)
+{
+    return {x:pos.x-cameraTranslation.x, y:pos.y-cameraTranslation.y};
+}
+
 function DownInteraction(pos)
 {
     mouseDown = true;
+    adjustedPos = RemoveCameraTranslation(pos);
     if (gameOver)
     {
         return;
@@ -699,7 +710,17 @@ function DownInteraction(pos)
     {
         var x = players[thisID].x;
         var y = players[thisID].y;
-        socket.emit("shotfired", {x,y}, {x:0, y:0});
+        var mX = adjustedPos.x;
+        var mY = adjustedPos.y;
+        var x2 = (mX - x) * (mX - x);
+        var y2 = (mY - y) * (mY - y);
+        var d2 = x2 + y2;
+        if (d2 <= (shootDistance*shootDistance))
+        {
+            var v1 = new Vector(mX - x, mY - y);
+            v1 = v1.normalize();
+            socket.emit("shotfired",{x,y},{x:v1.x, y:v1.y});
+        }
     }
     /*if (!controlClicked)
     {
