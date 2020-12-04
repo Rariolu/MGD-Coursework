@@ -88,15 +88,24 @@ class ServerPlayer extends GameEntity
                 }
             }
         }
+        /*for (let b in bullets)
+        {
+            var bullet = bullets[b];
+            if (bullet.senderID != this.playerID)
+            {
+                
+            }
+        }*/
     }
 }
 
 class ServerBullet extends GameEntity
 {
-    constructor(id, pos, dir)
+    constructor(id, pos, dir, playerID)
     {
         super();
         this.bulletID = id;
+        this.senderID = playerID;
         this.originalPosition = pos;
         this.x = pos.x;
         this.y = pos.y;
@@ -112,6 +121,7 @@ class ServerBullet extends GameEntity
         {
             io.emit("bulletupdate",this.bulletID,this.x,this.y);
         }
+        
     }
     OutsideRange()
     {
@@ -202,7 +212,8 @@ var ioConnection = function(socket)
     socket.emit("serverconnect");
     var playerID = playerCount++;
     SpawnExistingPlayers(socket);
-    
+    SpawnBullets(socket);
+    SpawnCoins(socket);
     var player = PlayerSpawn(playerID, socket);
     var scoreChanged = function(score)
     {
@@ -210,7 +221,6 @@ var ioConnection = function(socket)
     }
     player.scoreChanged = scoreChanged;
     
-    SpawnCoins(socket);
     socket.emit("setplayer",playerID);
     
     var dirClick = function(btnID)
@@ -269,7 +279,7 @@ var ioConnection = function(socket)
     var shotFired = function(pos, dir)
     {
         var bulletID = bulletCount++;
-        var bullet = new ServerBullet(bulletID, pos, dir);
+        var bullet = new ServerBullet(bulletID, pos, dir, playerID);
         bullets[bulletID] =  bullet;
         io.emit("bulletcreated",bullet);
     };
