@@ -123,7 +123,7 @@ class ServerBullet extends GameEntity
         var x2 = (this.x - this.originalPosition.x) * (this.x - this.originalPosition.x);
         var y2 = (this.y - this.originalPosition.y) * (this.y - this.originalPosition.y);
         var d2 = x2 + y2;
-        return d2 >= bulletRange;
+        return d2 >= bulletRange*bulletRange;
     }
 }
 
