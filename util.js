@@ -5,7 +5,7 @@ const maxY = 2000;
 const coinTime = 50;
 const coinRadius = 300;
 const bulletRange = 500;
-const bulletSpeed = 30;
+const bulletSpeed = 100;
 const coinSpawnProb = 0.0005;
 const playerSpeed = 300;
 
