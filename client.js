@@ -141,8 +141,9 @@ function Initialisation()
         
         background = new Sprite("background");
         
-        ResizeCanvas();
+        
         GameLoop();
+        ResizeCanvas();
     }
     socket = io();
     socket.on("serverconnect",ServerConnect);
