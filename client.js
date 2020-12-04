@@ -637,18 +637,27 @@ function ResizeCanvas()
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
     
+    var cellWidth = canvas.width / 5;
+    var cellHeight = canvas.height / 8;
+    
     const verticalX = canvas.width/2;
     
-    controls["down"].y = canvas.height - btnDown.Height();
+    controls["down"].SetDimensions(cellWidth,cellHeight*2);
+    controls["left"].SetDimensions(cellWidth*2,cellHeight);
+    controls["right"].SetDimensions(cellWidth*2,cellHeight);
+    controls["up"].SetDimensions(cellWidth,cellHeight*2);
+    
+    //controls["down"].y = canvas.height - controls["down"].Height();
+    controls["down"].y = canvas.height - cellHeight;
     controls["down"].x = verticalX;
     
-    controls["left"].x = verticalX - btnLeft.Width();
-    controls["left"].y = btnDown.y - (btnDown.Height()/2);
+    controls["left"].x = verticalX - (cellWidth * 2);
+    controls["left"].y = canvas.height - cellHeight;
     
-    controls["right"].x = verticalX + btnRight.Width();
-    controls["right"].y = btnLeft.y;
+    controls["right"].x = verticalX + (cellWidth*2);
+    controls["right"].y = controls["left"].y;
     
-    controls["up"].y = btnDown.y - btnUp.Height();
+    controls["up"].y = controls["down"].y - (cellHeight*2);
     controls["up"].x = verticalX;
 }
 
