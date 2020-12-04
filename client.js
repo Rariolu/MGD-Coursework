@@ -2,6 +2,10 @@ var RequestAnimFrame = window.requestAnimationFrame ||
                 window.mozRequestAnimationFrame ||
                 window.webkitRequestAnimationFrame ||
                 window.msRequestAnimationFrame;
+
+const AudioContext = window.AudioContext || window.webkitAudioContext;
+const audioContext = new AudioContext();
+
 var socket;
 var canvas;
 var canvasContext;
@@ -24,6 +28,7 @@ const playerSpeed = 100;
 var coins = {};
 var connections = 0;
 var playerScore = 0;
+var sounds = {};
 
 //Images
 const imgDown = "/assets/down.png";
@@ -37,6 +42,9 @@ const imgStarlyDown = "/assets/starly_down_";
 const imgStarlyLeft = "/assets/starly_left_";
 const imgStarlyRight = "/assets/starly_right_";
 const imgStarlyUp = "/assets/starly_up_";
+
+//Audio
+const audCoin = "/assets/coin.wav";
 
 function Initialisation()
 {
@@ -80,11 +88,16 @@ function Initialisation()
             AddImage("starly_right_"+i, imgStarlyRight + i + ".png");
             AddImage("starly_up_"+i, imgStarlyUp + i + ".png");
         }
+        //const audio = new Audio(audCoin);
+        //const source = audioContext.createMediaElementSource(audio);
+        //source.connect(audioContext.destination);
+        AddAudio("coin", audCoin);
         
         btnDown = new Sprite("btnDown");
         btnDown.clickEvent = function()
         {
             players[thisID].dY = playerSpeed;
+            audio.play();
         };
         btnDown.mouseUp = function()
         {
@@ -149,6 +162,7 @@ function Initialisation()
 function ScoreChanged(score)
 {
     playerScore = score;
+    PlaySound("coin");
 }
 
 function ServerConnect()
@@ -242,6 +256,24 @@ function AddImage(name, src)
     var img = new Image();
     img.src = src;
     images[name] = img;
+}
+
+function AddAudio(name, src)
+{
+    var audio = new Audio(src);
+    sounds[name] = audio;
+}
+
+function PlaySound(name)
+{
+    if (sounds[name] != null)
+    {
+        sounds[name].play();
+    }
+    else
+    {
+        console.log("Sound \""+name+"\" doesn't exist.");
+    }
 }
 
 function GetImage(name)
@@ -542,6 +574,7 @@ function GameLoop()
     startTime = currentTime;
     Update(delta);
     Render();
+    
     RequestAnimFrame(GameLoop);
 }
 
