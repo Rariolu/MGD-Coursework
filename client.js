@@ -26,17 +26,17 @@ var connections = 0;
 var playerScore = 0;
 
 //Images
-const imgDown = "/down.png";
-const imgLeft = "/left.png";
-const imgRight = "/right.png";
-const imgUp = "/up.png";
-const imgBullet = "/bullet.png";
-const imgBackground = "/70ssiluette.png";
-const imgCoin = "/coin.png";
-const imgStarlyDown = "/Starly/starly_down_";
-const imgStarlyLeft = "/Starly/starly_left_";
-const imgStarlyRight = "/Starly/starly_right_";
-const imgStarlyUp = "/Starly/starly_up_";
+const imgDown = "/assets/down.png";
+const imgLeft = "/assets/left.png";
+const imgRight = "/assets/right.png";
+const imgUp = "/assets/up.png";
+const imgBullet = "/assets/bullet.png";
+const imgBackground = "/assets/70ssiluette.png";
+const imgCoin = "/assets/coin.png";
+const imgStarlyDown = "/assets/starly_down_";
+const imgStarlyLeft = "/assets/starly_left_";
+const imgStarlyRight = "/assets/starly_right_";
+const imgStarlyUp = "/assets/starly_up_";
 
 function Initialisation()
 {
@@ -594,7 +594,7 @@ function Render()
     {
         controls[c].Render();
     }
-    StyleText("black","200px arial","centre","middle");
+    StyleText("black","10vw arial","centre","top");
     canvasContext.fillText("Score: " + playerScore, 10, 100);
 }
 
