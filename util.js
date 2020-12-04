@@ -7,10 +7,10 @@ const coinRadius = 300;
 const bulletRange = 500;
 const bulletSpeed = 30;
 const coinSpawnProb = 0.0005;
-const playerSpeed = 100;
+const playerSpeed = 300;
 
-if(typeof process === 'object')
-//Check the process type to determine if script is running in client or server
+if (typeof process === 'object')
+//Check if the script is running on the server
 {
     exports.minX = minX;
     exports.maxX = maxX;
