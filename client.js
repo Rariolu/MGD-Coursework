@@ -16,15 +16,11 @@ var thisID;
 //var thisPlayer;
 var gameOver = false;
 var controls = {};
-var btnDown;
-var btnLeft;
-var btnRight;
-var btnUp;
 var background;
 var bullets = {};
 const shootDistance = 150;
 var images = {};
-const playerSpeed = 100;
+//const playerSpeed = 100;
 var coins = {};
 var connections = 0;
 var playerScore = 0;
@@ -93,18 +89,17 @@ function Initialisation()
         //source.connect(audioContext.destination);
         AddAudio("coin", audCoin);
         
-        btnDown = new Sprite("btnDown");
+        var btnDown = new Sprite("btnDown");
         btnDown.clickEvent = function()
         {
             players[thisID].dY = playerSpeed;
-            audio.play();
         };
         btnDown.mouseUp = function()
         {
             players[thisID].dY = 0;
         };
         
-        btnLeft = new Sprite("btnLeft");
+        var btnLeft = new Sprite("btnLeft");
         btnLeft.clickEvent = function()
         {
             players[thisID].dX = -playerSpeed;
@@ -114,7 +109,7 @@ function Initialisation()
             players[thisID].dX = 0;
         };
         
-        btnRight = new Sprite("btnRight");
+        var btnRight = new Sprite("btnRight");
         btnRight.clickEvent = function()
         {
             players[thisID].dX = playerSpeed;
@@ -124,7 +119,7 @@ function Initialisation()
             players[thisID].dX = 0;
         };
         
-        btnUp = new Sprite("btnUp");
+        var btnUp = new Sprite("btnUp");
         btnUp.clickEvent = function()
         {
             players[thisID].dY = -playerSpeed;
@@ -203,6 +198,13 @@ function KeyDown(e)
         case 38: //Up
         {
             socket.emit("dirclick","up");
+            break;
+        }
+        case 32: //Space
+        {
+            var x = players[thisID].x;
+            var y = players[thisID].y;
+            socket.emit("shotfired", {x, y},{x:1, y:0} );
             break;
         }
     }
@@ -692,6 +694,12 @@ function DownInteraction(pos)
             controlClicked = true;
             break;
         }
+    }
+    if (!controlClicked)
+    {
+        var x = players[thisID].x;
+        var y = players[thisID].y;
+        socket.emit("shotfired", {x,y}, {x:0, y:0});
     }
     /*if (!controlClicked)
     {

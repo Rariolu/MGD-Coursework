@@ -3,25 +3,20 @@ var http = require("http").createServer(app);
 var io = require("socket.io")(http);
 var fs = require("fs");
 
+var util = require("./util.js");
+
 const bodyParser = require('body-parser');
 
 var playerCount = 0;
 var bulletCount = 0;
-var players = [];
-var bullets = [];
+var players = {};
+var bullets = {};
 var prevTime;
 var runGame = true;
-const bulletRange = 500;
-const bulletSpeed = 30;
-const coinSpawnProb = 0.0005;
+
 var coinCount = 0;
 var coins = {};
-const minX = -2000;
-const maxX = 2000;
-const minY = -2000;
-const maxY = 2000;
-const coinTime = 50;
-const coinRadius = 300;
+
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
@@ -73,7 +68,7 @@ class ServerPlayer extends GameEntity
             var coin = coins[c];
             
             var x2 = coin.x - this.x;
-            if (Math.abs(x2) <= coinRadius)
+            if (Math.abs(x2) <= util.coinRadius)
             {
                 x2 *= x2;
 
@@ -81,7 +76,7 @@ class ServerPlayer extends GameEntity
                 y2 *= y2;
 
                 var d2 = x2 + y2;
-                if (d2 <= coinRadius * coinRadius)
+                if (d2 <= util.coinRadius * util.coinRadius)
                 {
                     this.IncrementScore();
                     DestroyCoin(c);
@@ -105,8 +100,8 @@ class ServerBullet extends GameEntity
         this.originalPosition = pos;
         this.x = pos.x;
         this.y = pos.y;
-        this.dX = dir.x * bulletSpeed;
-        this.dY = dir.y * bulletSpeed;
+        this.dX = dir.x * util.bulletSpeed;
+        this.dY = dir.y * util.bulletSpeed;
     }
     Update(delta)
     {
@@ -123,7 +118,7 @@ class ServerBullet extends GameEntity
         var x2 = (this.x - this.originalPosition.x) * (this.x - this.originalPosition.x);
         var y2 = (this.y - this.originalPosition.y) * (this.y - this.originalPosition.y);
         var d2 = x2 + y2;
-        return d2 >= bulletRange*bulletRange;
+        return d2 >= util.bulletRange*util.bulletRange;
     }
 }
 
@@ -135,7 +130,7 @@ class ServerCoin extends GameEntity
         this.coinID = id;
         this.x = pos.x;
         this.y = pos.y;
-        this.timeRemaining = coinTime;
+        this.timeRemaining = util.coinTime;
     }
     Update(delta)
     {
@@ -199,7 +194,7 @@ function SpawnBullets(socket)
     }
 }
 
-const playerSpeed = 100;
+
 var ioConnection = function(socket)
 {
     
@@ -224,22 +219,22 @@ var ioConnection = function(socket)
         {
             case "down":
             {
-                players[playerID].dY = playerSpeed;
+                players[playerID].dY = util.playerSpeed;
                 break;
             }
             case "up":
             {
-                players[playerID].dY = -playerSpeed;
+                players[playerID].dY = -util.playerSpeed;
                 break;
             }
             case "left":
             {
-                players[playerID].dX = -playerSpeed;
+                players[playerID].dX = -util.playerSpeed;
                 break;
             }
             case "right":
             {
-                players[playerID].dX = playerSpeed;
+                players[playerID].dX = util.playerSpeed;
                 break;
             }
         }
@@ -302,8 +297,8 @@ function DestroyBullet(id)
 function CreateCoin()
 {
     var coinID = coinCount++;
-    var posX = Math.floor(Math.random() * maxX) + minX;
-    var posY = Math.floor(Math.random() * maxY) + minY;
+    var posX = Math.floor(Math.random() * util.maxX) + util.minX;
+    var posY = Math.floor(Math.random() * util.maxY) + util.minY;
     var pos = {x:posX, y:posY};
     var coin = new ServerCoin(coinID,pos);
     coins[coinID] = coin;
@@ -321,7 +316,7 @@ function Update()
     var currentTime = Date.now();
     var delta = (currentTime - prevTime) / 1000;
     prevTime = currentTime;
-    if (Math.random() < coinSpawnProb)
+    if (Math.random() < util.coinSpawnProb)
     {
         CreateCoin();
     }
