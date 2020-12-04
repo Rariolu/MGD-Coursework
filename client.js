@@ -488,6 +488,7 @@ class ClientPlayer extends Sprite
         this.frameY = 0;
         this.frameXMax = 0.5;
         this.frameTimer = this.frameXMax;
+        this.SetDimensions(20,20);
     }
     AnimationFrame(delta)
     {
