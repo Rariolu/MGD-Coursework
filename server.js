@@ -92,25 +92,29 @@ class ServerPlayer extends GameEntity
             if (bullet.senderID != this.playerID)
             {
                 var x2 = bullet.x - this.x;
-                x2 *= x2;
                 
-                var y2 = bullet.y - this.y;
-                y2 *= y2;
-                
-                var d2 = x2 + y2;
-                if (d2 <= util.bulletRadius*util.bulletRadius)
+                if (Math.abs(x2) <= util.bulletRadius)
                 {
-                    console.log("bullet hit player");
-                    this.lives--;
-                    if (this.playerShot != null)
+                    x2 *= x2;
+
+                    var y2 = bullet.y - this.y;
+                    y2 *= y2;
+
+                    var d2 = x2 + y2;
+                    if (d2 <= util.bulletRadius*util.bulletRadius)
                     {
-                        this.playerShot(this.lives);
+                        console.log("bullet hit player");
+                        this.lives--;
+                        if (this.playerShot != null)
+                        {
+                            this.playerShot(this.lives);
+                        }
+                        if (this.lives < 1)
+                        {
+                            io.emit("playerdied", this.playerID);
+                        }
+                        DestroyBullet(b);
                     }
-                    if (this.lives < 1)
-                    {
-                        io.emit("playerdied", this.playerID);
-                    }
-                    DestroyBullet(b);
                 }
             }
         }
