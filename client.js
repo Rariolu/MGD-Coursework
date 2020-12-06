@@ -155,6 +155,12 @@ function Initialisation()
     socket.on("coindespawn", CoinDelete);
     socket.on("scorechanged", ScoreChanged);
     socket.on("playershot", PlayerShot);
+    socket.on("playerdied", PlayerDied);
+}
+
+function PlayerDied(playerID)
+{
+    PlayerDespawn(playerID);
 }
 
 function PlayerShot(playerID, lives)
