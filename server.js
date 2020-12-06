@@ -111,9 +111,16 @@ class ServerBullet extends GameEntity
         this.y = pos.y;
         this.dX = dir.x * util.bulletSpeed;
         this.dY = dir.y * util.bulletSpeed;
+        this.timeRemaining = util.bulletTime;
     }
     Update(delta)
     {
+        this.timeRemaining -= delta;
+        if (this.timeRemaining <= 0)
+        {
+            DestroyBullet(this.bulletID);
+            return;
+        }
         var prevX = this.x;
         var prevY = this.y;
         super.Update(delta);
@@ -123,13 +130,13 @@ class ServerBullet extends GameEntity
         }
         
     }
-    OutsideRange()
+    /*OutsideRange()
     {
         var x2 = (this.x - this.originalPosition.x) * (this.x - this.originalPosition.x);
         var y2 = (this.y - this.originalPosition.y) * (this.y - this.originalPosition.y);
         var d2 = x2 + y2;
         return d2 >= util.bulletRange*util.bulletRange;
-    }
+    }*/
 }
 
 class ServerCoin extends GameEntity
@@ -333,10 +340,10 @@ function Update()
     for (let b in bullets)
     {
         bullets[b].Update(delta);
-        if (bullets[b].OutsideRange())
+        /*if (bullets[b].OutsideRange())
         {
             DestroyBullet(b);
-        }
+        }*/
     }
     for (let c in coins)
     {
