@@ -45,6 +45,8 @@ class ServerPlayer extends GameEntity
         this.playerID = id;
         this.score = 0;
         this.scoreChanged = null;
+        this.playerShot = null;
+        this.lives = util.playerLives;
     }
     IncrementScore()
     {
@@ -82,20 +84,32 @@ class ServerPlayer extends GameEntity
                     DestroyCoin(c);
                     console.log(this.playerID+"'s score is "+this.score);
                 }
-                else if (d2 < 6000)
-                {
-                    console.log("d2: "+d2);
-                }
             }
         }
-        /*for (let b in bullets)
+        for (let b in bullets)
         {
             var bullet = bullets[b];
             if (bullet.senderID != this.playerID)
             {
+                var x2 = bullet.x - this.x;
+                x2 *= x2;
                 
+                var y2 = bullet.y - this.y;
+                y2 *= y2;
+                
+                var d2 = x2 + y2;
+                if (d2 <= util.bulletRadius*util.bulletRadius)
+                {
+                    console.log("bullet hit player");
+                    this.lives--;
+                    if (this.playerShot != null)
+                    {
+                        this.playerShot(this.lives);
+                    }
+                    DestroyBullet(b);
+                }
             }
-        }*/
+        }
     }
 }
 
@@ -227,6 +241,12 @@ var ioConnection = function(socket)
         socket.emit("scorechanged", score);
     }
     player.scoreChanged = scoreChanged;
+    
+    var playerShot = function(lives)
+    {
+        socket.emit("playershot", playerID, lives);
+    };
+    player.playerShot = playerShot;
     
     socket.emit("setplayer",playerID);
     
