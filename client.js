@@ -24,6 +24,7 @@ var images = {};
 var coins = {};
 var connections = 0;
 var playerScore = 0;
+var localLives = playerLives;
 var sounds = {};
 
 //Images
@@ -135,7 +136,7 @@ function Initialisation()
         controls["up"] = btnUp;
         
         background = new Sprite("background");
-        
+        background.SetDimensions(1500,898);
         
         GameLoop();
         ResizeCanvas();
@@ -153,6 +154,15 @@ function Initialisation()
     socket.on("coinspawn", CoinSpawn);
     socket.on("coindespawn", CoinDelete);
     socket.on("scorechanged", ScoreChanged);
+    socket.on("playershot", PlayerShot);
+}
+
+function PlayerShot(playerID, lives)
+{
+    if (playerID == thisID)
+    {
+        localLives = lives;
+    }
 }
 
 function ScoreChanged(score)
@@ -638,6 +648,7 @@ function Render()
     }
     StyleText("black","10vw arial","centre","top");
     canvasContext.fillText("Score: " + playerScore, 10, 100);
+    canvasContext.fillText("Lives: "+localLives, 10, canvas.height- canvas.offsetTop - 100);
 }
 
 function ResizeCanvas()
@@ -719,34 +730,32 @@ function DownInteraction(pos)
         if (d2 <= (shootDistance*shootDistance))
         {
             var v1 = new Vector(mX - x, mY - y);
-            v1 = v1.normalize();
+            v1 = v1.Normalise();
             socket.emit("shotfired",{x,y},{x:v1.x, y:v1.y});
         }
     }
-    /*if (!controlClicked)
-    {
-        var x = players[thisID].x;
-        var y = players[thisID].y;
-        var x2 = (pos.x - x) * (pos.x - x);
-        var y2 = (pos.y - y) * (pos.y - y);
-        var d2 = x2 + y2;
-        if (true)//(d2 <= (shootDistance*shootDistance))
-        {
-            console.log("shot attempt");
-            //var v1 = new Vector(pos.x - x, pos.y - y);
-            //v1 = v1.normalize();
-            var v1 = {x:1, y:0};
-            socket.emit("shotfired",{x,y}, {x:v1.x, y:v1.y});
-        }
-        else
-        {
-            console.log("d2: "+d2+" sd: "+(shootDistance*shootDistance));
-        }
-    }
-    */
     MoveInteraction(pos);
 }
 
+class Vector
+{
+    constructor(x, y)
+    {
+        this.x = x;
+        this.y = y;
+    }
+    Normalise()
+    {
+        var x2 = this.x * this.x;
+        var y2 = this.y * this.y;
+        var magnitude = Math.sqrt(x2+y2);
+        this.x /= magnitude;
+        this.y /= magnitude;
+        return this;
+    }
+}
+
+/*
 var Vector = function(x,y)
 {
     this.x = x;
@@ -759,7 +768,7 @@ Vector.prototype.normalize = function()
     this.x = this.x/length; //assigning new value to x (dividing x by length of the vector)
     this.y= this.y/length; //assigning new value to y
     return this;
-}
+}*/
 
 
 function MoveInteraction(pos)
