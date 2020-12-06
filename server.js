@@ -106,6 +106,10 @@ class ServerPlayer extends GameEntity
                     {
                         this.playerShot(this.lives);
                     }
+                    if (this.lives < 1)
+                    {
+                        io.emit("playerdied", this.playerID);
+                    }
                     DestroyBullet(b);
                 }
             }
@@ -235,6 +239,7 @@ var ioConnection = function(socket)
     SpawnBullets(socket);
     SpawnCoins(socket);
     var player = PlayerSpawn(playerID, socket);
+    
     var scoreChanged = function(score)
     {
         socket.emit("scorechanged", score);
