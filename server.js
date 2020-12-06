@@ -228,10 +228,9 @@ function SpawnBullets(socket)
 
 var ioConnection = function(socket)
 {
-    
-    console.log("Client connected.");
-    socket.emit("serverconnect");
+    console.log("Client connected.");   
     var playerID = playerCount++;
+    socket.emit("serverconnect");
     SpawnExistingPlayers(socket);
     SpawnBullets(socket);
     SpawnCoins(socket);
