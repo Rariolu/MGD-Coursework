@@ -45,6 +45,45 @@ const audCoin = "/assets/coin.wav";
 
 function Initialisation()
 {
+    socket = io();
+    socket.on("serverconnect",ServerConnect);
+    socket.on("spawn", PlayerSpawn);
+    socket.on("despawn", PlayerDespawn);
+    socket.on("posupdate", PosUpdate);
+    socket.on("velupdate", VelUpdate);
+    socket.on("setplayer", SetPlayer);
+    socket.on("bulletcreated", BulletCreated);
+    socket.on("bulletdestroyed", BulletDestroyed);
+    socket.on("bulletupdate", BulletUpdate);
+    socket.on("coinspawn", CoinSpawn);
+    socket.on("coindespawn", CoinDelete);
+    socket.on("scorechanged", ScoreChanged);
+    socket.on("playershot", PlayerShot);
+    socket.on("playerdied", PlayerDied);
+}
+
+function PlayerDied(playerID)
+{
+    PlayerDespawn(playerID);
+}
+
+function PlayerShot(playerID, lives)
+{
+    if (playerID == thisID)
+    {
+        localLives = lives;
+    }
+}
+
+function ScoreChanged(score)
+{
+    playerScore = score;
+    PlaySound("coin");
+}
+
+function ServerConnect()
+{
+    connections++;
     canvas = document.getElementById("cvsGame");
     canvasContext = canvas.getContext("2d");
     if (canvas.getContext)
@@ -140,51 +179,6 @@ function Initialisation()
         
         GameLoop();
         ResizeCanvas();
-    }
-    socket = io();
-    socket.on("serverconnect",ServerConnect);
-    socket.on("spawn", PlayerSpawn);
-    socket.on("despawn", PlayerDespawn);
-    socket.on("posupdate", PosUpdate);
-    socket.on("velupdate", VelUpdate);
-    socket.on("setplayer", SetPlayer);
-    socket.on("bulletcreated", BulletCreated);
-    socket.on("bulletdestroyed", BulletDestroyed);
-    socket.on("bulletupdate", BulletUpdate);
-    socket.on("coinspawn", CoinSpawn);
-    socket.on("coindespawn", CoinDelete);
-    socket.on("scorechanged", ScoreChanged);
-    socket.on("playershot", PlayerShot);
-    socket.on("playerdied", PlayerDied);
-}
-
-function PlayerDied(playerID)
-{
-    PlayerDespawn(playerID);
-}
-
-function PlayerShot(playerID, lives)
-{
-    if (playerID == thisID)
-    {
-        localLives = lives;
-    }
-}
-
-function ScoreChanged(score)
-{
-    playerScore = score;
-    PlaySound("coin");
-}
-
-function ServerConnect()
-{
-    connections++;
-    if (connections > 1)
-    {
-        players = {};
-        bullets = {};
-        coins = {};
     }
 }
 
