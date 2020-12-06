@@ -46,7 +46,7 @@ const audCoin = "/assets/coin.wav";
 function Initialisation()
 {
     socket = io();
-    socket.on("serverconnect",ServerConnect);
+    socket.on("serverconnect", ServerConnect);
     socket.on("spawn", PlayerSpawn);
     socket.on("despawn", PlayerDespawn);
     socket.on("posupdate", PosUpdate);
@@ -111,8 +111,6 @@ function ServerConnect()
         AddImage("btnLeft",imgLeft);
         AddImage("btnRight",imgRight);
         AddImage("btnUp",imgUp);
-        //AddImage("player","/70sRowlette.png");
-        //AddImage("player","/starly.png");
         AddImage("bullet",imgBullet);
         AddImage("background", imgBackground);
         AddImage("coin", imgCoin);
@@ -124,9 +122,7 @@ function ServerConnect()
             AddImage("starly_right_"+i, imgStarlyRight + i + ".png");
             AddImage("starly_up_"+i, imgStarlyUp + i + ".png");
         }
-        //const audio = new Audio(audCoin);
-        //const source = audioContext.createMediaElementSource(audio);
-        //source.connect(audioContext.destination);
+
         AddAudio("coin", audCoin);
         
         var btnDown = new Sprite("btnDown");
