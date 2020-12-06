@@ -7,8 +7,10 @@ const coinRadius = 300;
 const bulletRange = 500;
 const bulletSpeed = 100;
 const bulletTime = 4;
+const bulletRadius = 250;
 const coinSpawnProb = 0.0005;
 const playerSpeed = 300;
+const playerLives = 3;
 
 if (typeof process === 'object')
 //Check if the script is running on the server
@@ -24,4 +26,6 @@ if (typeof process === 'object')
     exports.coinSpawnProb = coinSpawnProb;
     exports.playerSpeed = playerSpeed;
     exports.bulletTime = bulletTime;
+    exports.bulletRadius = bulletRadius;
+    exports.playerLives = playerLives;
 }
