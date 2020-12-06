@@ -6,6 +6,7 @@ const coinTime = 50;
 const coinRadius = 300;
 const bulletRange = 500;
 const bulletSpeed = 100;
+const bulletTime = 4;
 const coinSpawnProb = 0.0005;
 const playerSpeed = 300;
 
@@ -22,4 +23,5 @@ if (typeof process === 'object')
     exports.bulletSpeed = bulletSpeed;
     exports.coinSpawnProb = coinSpawnProb;
     exports.playerSpeed = playerSpeed;
+    exports.bulletTime = bulletTime;
 }
