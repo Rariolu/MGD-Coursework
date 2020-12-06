@@ -13,19 +13,18 @@ var startTime;
 var lastPoint = null;
 var players = {};
 var thisID;
-//var thisPlayer;
 var gameOver = false;
 var controls = {};
 var background;
 var bullets = {};
 const shootDistance = 500;
 var images = {};
-//const playerSpeed = 100;
 var coins = {};
 var connections = 0;
 var playerScore = 0;
 var localLives = playerLives;
 var sounds = {};
+var resourcesLoaded = false;
 
 //Images
 const imgDown = "/assets/down.png";
@@ -45,6 +44,25 @@ const audCoin = "/assets/coin.wav";
 
 function Initialisation()
 {
+    //Setting window input event handlers
+    window.addEventListener("resize",ResizeCanvas,false);
+    window.addEventListener("orientationchange",ResizeCanvas,false);
+
+    canvas.addEventListener("touchstart",TouchDown,false);
+    canvas.addEventListener("mousedown",MouseDown,false);
+
+    canvas.addEventListener("touchmove",TouchMove,true);
+    canvas.addEventListener("mousemove",MouseMove,true);
+
+    canvas.addEventListener("touchend",TouchUp,false);
+    canvas.addEventListener("mouseup",MouseUp,false);
+
+    document.body.addEventListener("touchcancel",TouchUp,false);
+
+    document.body.addEventListener("keydown", KeyDown);
+    document.body.addEventListener("keyup",KeyUp);
+    
+    //Setting websockets event handlers
     socket = io();
     socket.on("serverconnect", ServerConnect);
     socket.on("spawn", PlayerSpawn);
@@ -62,69 +80,43 @@ function Initialisation()
     socket.on("playerdied", PlayerDied);
 }
 
-function PlayerDied(playerID)
-{
-    PlayerDespawn(playerID);
-}
-
-function PlayerShot(playerID, lives)
-{
-    if (playerID == thisID)
-    {
-        localLives = lives;
-    }
-}
-
-function ScoreChanged(score)
-{
-    playerScore = score;
-    PlaySound("coin");
-}
-
 function ServerConnect()
 {
     connections++;
+    players = {};
+    controls = {};
+    bullets = {};
+    coins = {};
+    playerScore = 0;
+    localLives = playerLives;
     canvas = document.getElementById("cvsGame");
     canvasContext = canvas.getContext("2d");
     if (canvas.getContext)
     {
-        window.addEventListener("resize",ResizeCanvas,false);
-        window.addEventListener("orientationchange",ResizeCanvas,false);
-
-        canvas.addEventListener("touchstart",TouchDown,false);
-        canvas.addEventListener("mousedown",MouseDown,false);
-
-        canvas.addEventListener("touchmove",TouchMove,true);
-        canvas.addEventListener("mousemove",MouseMove,true);
-
-        canvas.addEventListener("touchend",TouchUp,false);
-        canvas.addEventListener("mouseup",MouseUp,false);
-
-        document.body.addEventListener("touchcancel",TouchUp,false);
-        
-        document.body.addEventListener("keydown", KeyDown);
-        document.body.addEventListener("keyup",KeyUp);
         
         startTime = Date.now();
         
-        AddImage("btnDown",imgDown);
-        AddImage("btnLeft",imgLeft);
-        AddImage("btnRight",imgRight);
-        AddImage("btnUp",imgUp);
-        AddImage("bullet",imgBullet);
-        AddImage("background", imgBackground);
-        AddImage("coin", imgCoin);
-        
-        for (var i = 0; i < 3; i++)
+        if (!resourcesLoaded)
         {
-            AddImage("starly_down_"+i, imgStarlyDown + i + ".png");
-            AddImage("starly_left_"+i,imgStarlyLeft + i + ".png");
-            AddImage("starly_right_"+i, imgStarlyRight + i + ".png");
-            AddImage("starly_up_"+i, imgStarlyUp + i + ".png");
-        }
+            AddImage("btnDown",imgDown);
+            AddImage("btnLeft",imgLeft);
+            AddImage("btnRight",imgRight);
+            AddImage("btnUp",imgUp);
+            AddImage("bullet",imgBullet);
+            AddImage("background", imgBackground);
+            AddImage("coin", imgCoin);
 
-        AddAudio("coin", audCoin);
-        
+            for (var i = 0; i < 3; i++)
+            {
+                AddImage("starly_down_"+i, imgStarlyDown + i + ".png");
+                AddImage("starly_left_"+i,imgStarlyLeft + i + ".png");
+                AddImage("starly_right_"+i, imgStarlyRight + i + ".png");
+                AddImage("starly_up_"+i, imgStarlyUp + i + ".png");
+            }
+
+            AddAudio("coin", audCoin);
+        }
+                
         var btnDown = new Sprite("btnDown");
         btnDown.clickEvent = function()
         {
@@ -175,7 +167,27 @@ function ServerConnect()
         
         GameLoop();
         ResizeCanvas();
+        resourcesLoaded = true;
     }
+}
+
+function PlayerDied(playerID)
+{
+    PlayerDespawn(playerID);
+}
+
+function PlayerShot(playerID, lives)
+{
+    if (playerID == thisID)
+    {
+        localLives = lives;
+    }
+}
+
+function ScoreChanged(score)
+{
+    playerScore = score;
+    PlaySound("coin");
 }
 
 function KeyDown(e)
@@ -287,7 +299,14 @@ function PlaySound(name)
 
 function GetImage(name)
 {
-    return images[name];
+    if (images[name] != null)
+    {
+        return images[name];
+    }
+    else
+    {
+        console.log("Image \""+name+"\" doesn't exist.");
+    }
 }
 
 function BulletUpdate(id, x, y)
@@ -332,17 +351,14 @@ function PosUpdate(id, x, y)
 
 function VelUpdate(id, dX, dY)
 {
-    //if (id != thisID)
+    if (players[id] != null)
     {
-        if (players[id] != null)
-        {
-            players[id].dX = dX;
-            players[id].dY = dY;
-        }
-        else
-        {
-            console.log("Apparently a player doesn't exist: "+id);
-        }
+        players[id].dX = dX;
+        players[id].dY = dY;
+    }
+    else
+    {
+        console.log("Apparently a player doesn't exist: "+id);
     }
 }
 
