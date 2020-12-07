@@ -598,7 +598,7 @@ function Render()
             canvasContext.fillText("Lives: "+localLives, 10, canvas.height- canvas.offsetTop - 100);
             if (isPaused)
             {
-                canvasContext.drawImage(GetImage("pause"),0,0,canvas.width,canvas.height);
+                canvasContext.drawImage(GetImage(IMAGE.PAUSE),0,0,canvas.width,canvas.height);
             }
             break;
         }
