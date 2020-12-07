@@ -540,10 +540,6 @@ function DownInteraction(pos)
 {
     mouseDown = true;
     adjustedPos = RemoveCameraTranslation(pos);
-    if (gameOver)
-    {
-        return;
-    }
     var controlClicked = false;
     for (let c in controls)
     {
@@ -745,7 +741,7 @@ class ClientPlayer extends Sprite
         this.frameY = 0;
         this.frameXMax = 0.5;
         this.frameTimer = this.frameXMax;
-        this.SetDimensions(200,200);
+        this.SetDimensions(playerWidth, playerHeight);
     }
     Render()
     {
