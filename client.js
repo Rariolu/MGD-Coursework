@@ -282,12 +282,19 @@ function KeyDown(e)
         }
         case 32: //Space
         {
-            //socket=io();
-            /*
             var x = players[thisID].x;
             var y = players[thisID].y;
-            var dir = new Vector(players[thisID].dX, players[thisID].dY).Normalise();
-            socket.emit("shotfired", {x, y}, dir);*/
+            var dX = players[thisID].dX;
+            var dY = players[thisID].dY;
+            var dir = new Vector(dX, dY);
+            console.log(dir);
+            dir.Normalise();
+            console.log(dir);
+            if (dir.Magnitude() == 0)
+            {
+                dir.y = -1;
+            }
+            socket.emit(SOCKET_EVENT.SHOT_FIRED, {x, y}, dir);
             break;
         }
         case 27: //Escape
@@ -371,41 +378,65 @@ function ServerConnect()
         var btnDown = new Sprite(IMAGE.BTNDOWN);
         btnDown.clickEvent = function()
         {
-            players[thisID].dY = playerSpeed;
+            if (gameState == GAMESTATE.MAINGAME)
+            {
+                players[thisID].dY = playerSpeed;
+            }
         };
         btnDown.mouseUp = function()
         {
-            players[thisID].dY = 0;
+            if (gameState == GAMESTATE.MAINGAME)
+            {
+                players[thisID].dY = 0;
+            }
         };
         
         var btnLeft = new Sprite(IMAGE.BTNLEFT);
         btnLeft.clickEvent = function()
         {
-            players[thisID].dX = -playerSpeed;
+            if (gameState == GAMESTATE.MAINGAME)
+            {
+                players[thisID].dX = -playerSpeed;
+            }
         };
         btnLeft.mouseUp = function()
         {
-            players[thisID].dX = 0;
+            if (gameState == GAMESTATE.MAINGAME)
+            {
+                players[thisID].dX = 0;
+            }
         };
         
         var btnRight = new Sprite(IMAGE.BTNRIGHT);
         btnRight.clickEvent = function()
         {
-            players[thisID].dX = playerSpeed;
+            if (gameState == GAMESTATE.MAINGAME)
+            {
+                players[thisID].dX = playerSpeed;
+            }
         };
         btnRight.mouseUp = function()
         {
-            players[thisID].dX = 0;
+            if (gameState == GAMESTATE.MAINGAME)
+            {
+                players[thisID].dX = 0;
+            }
         };
         
         var btnUp = new Sprite(IMAGE.BTNUP);
         btnUp.clickEvent = function()
         {
-            players[thisID].dY = -playerSpeed;
+            if (gameState == GAMESTATE.MAINGAME)
+            {
+                players[thisID].dY = -playerSpeed;
+            }
         };
         btnUp.mouseUp = function()
         {
-            players[thisID].dY = 0;
+            if (gameState == GAMESTATE.MAINGAME)
+            {
+                players[thisID].dY = 0;
+            }
         };
         
         controls[CONTROL.DOWN] = btnDown;
@@ -507,13 +538,17 @@ function PlayerShot(playerID, lives)
 {
     if (playerID == thisID)
     {
-        localLives = lives;
+        localLives = lives >= 0 ? lives : 0;
     }
 }
 
 function PlayerDied(playerID)
 {
     PlayerDespawn(playerID);
+    if (playerID == thisID)
+    {
+        gameState = GAMESTATE.GAMEOVER;
+    }
 }
 
 function GameLoop()
@@ -602,6 +637,10 @@ function Render()
             }
             break;
         }
+        case GAMESTATE.GAMEOVER:
+        {
+            break;
+        }
     }
 }
 
@@ -614,30 +653,40 @@ function DownInteraction(pos)
 {
     mouseDown = true;
     adjustedPos = RemoveCameraTranslation(pos);
-    var controlClicked = false;
-    for (let c in controls)
+    switch (gameState)
     {
-        if (controls[c].Click(pos))
+        case GAMESTATE.MAINGAME:
         {
-            socket.emit(SOCKET_EVENT.DIR_CLICK,c);
-            controlClicked = true;
+            if (!isPaused)
+            {
+                var controlClicked = false;
+                for (let c in controls)
+                {
+                    if (controls[c].Click(pos))
+                    {
+                        socket.emit(SOCKET_EVENT.DIR_CLICK,c);
+                        controlClicked = true;
+                        break;
+                    }
+                }
+                if (!controlClicked)
+                {
+                    var x = players[thisID].x;
+                    var y = players[thisID].y;
+                    var mX = adjustedPos.x;
+                    var mY = adjustedPos.y;
+                    var x2 = (mX - x) * (mX - x);
+                    var y2 = (mY - y) * (mY - y);
+                    var d2 = x2 + y2;
+                    if (d2 <= (shootDistance*shootDistance))
+                    {
+                        var v1 = new Vector(mX - x, mY - y);
+                        v1.Normalise();
+                        socket.emit(SOCKET_EVENT.SHOT_FIRED,{x,y}, v1);
+                    }
+                }
+            }
             break;
-        }
-    }
-    if (!controlClicked)
-    {
-        var x = players[thisID].x;
-        var y = players[thisID].y;
-        var mX = adjustedPos.x;
-        var mY = adjustedPos.y;
-        var x2 = (mX - x) * (mX - x);
-        var y2 = (mY - y) * (mY - y);
-        var d2 = x2 + y2;
-        if (d2 <= (shootDistance*shootDistance))
-        {
-            var v1 = new Vector(mX - x, mY - y);
-            v1 = v1.Normalise();
-            socket.emit(SOCKET_EVENT.SHOT_FIRED,{x,y},{x:v1.x, y:v1.y});
         }
     }
     MoveInteraction(pos);
@@ -654,7 +703,7 @@ function UpInteraction(pos)
     mouseDown = false;
     for (let c in controls)
     {
-        socket.emit(SOCKET_EVENT.DIR_UNCLICK,c);
+        socket.emit(SOCKET_EVENT.DIR_UNCLICK, c);
         if (controls[c].mouseUp != null)
         {
             controls[c].mouseUp();
@@ -845,7 +894,7 @@ class ClientBullet extends Sprite
 {
     constructor(serverBullet)
     {
-        super("bullet");
+        super(IMAGE.BULLET);
         this.x = serverBullet.x;
         this.y = serverBullet.y;
         this.dX = serverBullet.dX;
@@ -867,18 +916,26 @@ class ClientCoin extends Sprite
 
 class Vector
 {
-    constructor(x, y)
+    constructor(_x, _y)
     {
-        this.x = x;
-        this.y = y;
+        this.x = _x;
+        this.y = _y;
     }
-    Normalise()
+    Magnitude()
     {
         var x2 = this.x * this.x;
         var y2 = this.y * this.y;
-        var magnitude = Math.sqrt(x2+y2);
-        this.x /= magnitude;
-        this.y /= magnitude;
-        return this;
+        var m2 = x2 + y2;
+        console.log("x2: "+x2+"; y2: "+y2 +"; m2: "+m2);
+        return Math.sqrt(m2);
+    }
+    Normalise()
+    {
+        var magnitude = this.Magnitude();
+        if (magnitude != 0)
+        {
+            this.x /= magnitude;
+            this.y /= magnitude;
+        }
     }
 }
