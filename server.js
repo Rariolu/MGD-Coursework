@@ -111,7 +111,8 @@ class ServerPlayer extends GameEntity
                         }
                         if (this.lives < 1)
                         {
-                            io.emit("playerdied", this.playerID);
+                            io.emit(util.SOCKET_EVENT.PLAYER_DIED, this.playerID);
+                            PlayerDespawn(this.playerID);
                         }
                         DestroyBullet(b);
                     }
@@ -148,17 +149,9 @@ class ServerBullet extends GameEntity
         super.Update(delta);
         if (this.x != prevX || this.y != prevY)
         {
-            io.emit("bulletupdate",this.bulletID,this.x,this.y);
+            io.emit(util.SOCKET_EVENT.BULLET_UPDATE,this.bulletID,this.x,this.y);
         }
-        
     }
-    /*OutsideRange()
-    {
-        var x2 = (this.x - this.originalPosition.x) * (this.x - this.originalPosition.x);
-        var y2 = (this.y - this.originalPosition.y) * (this.y - this.originalPosition.y);
-        var d2 = x2 + y2;
-        return d2 >= util.bulletRange*util.bulletRange;
-    }*/
 }
 
 class ServerCoin extends GameEntity
