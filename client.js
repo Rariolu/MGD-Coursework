@@ -180,22 +180,22 @@ function ResizeCanvas()
     
     const verticalX = canvas.width/2;
     
-    controls["down"].SetDimensions(cellWidth,cellHeight*2);
-    controls["left"].SetDimensions(cellWidth*2,cellHeight);
-    controls["right"].SetDimensions(cellWidth*2,cellHeight);
-    controls["up"].SetDimensions(cellWidth,cellHeight*2);
+    controls[CONTROL.DOWN].SetDimensions(cellWidth,cellHeight*2);
+    controls[CONTROL.LEFT].SetDimensions(cellWidth*2,cellHeight);
+    controls[CONTROL.RIGHT].SetDimensions(cellWidth*2,cellHeight);
+    controls[CONTROL.UP].SetDimensions(cellWidth,cellHeight*2);
     
-    controls["down"].y = canvas.height - cellHeight;
-    controls["down"].x = verticalX;
+    controls[CONTROL.DOWN].y = canvas.height - cellHeight;
+    controls[CONTROL.DOWN].x = verticalX;
     
-    controls["left"].x = verticalX - (cellWidth * 2);
-    controls["left"].y = canvas.height - cellHeight;
+    controls[CONTROL.LEFT].x = verticalX - (cellWidth * 2);
+    controls[CONTROL.LEFT].y = canvas.height - cellHeight;
     
-    controls["right"].x = verticalX + (cellWidth*2);
-    controls["right"].y = controls["left"].y;
+    controls[CONTROL.RIGHT].x = verticalX + (cellWidth*2);
+    controls[CONTROL.RIGHT].y = controls[CONTROL.LEFT].y;
     
-    controls["up"].y = controls["down"].y - (cellHeight*2);
-    controls["up"].x = verticalX;
+    controls[CONTROL.UP].y = controls[CONTROL.DOWN].y - (cellHeight*2);
+    controls[CONTROL.UP].x = verticalX;
 }
 
 function TouchDown(evt)
