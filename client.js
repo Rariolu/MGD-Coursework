@@ -40,7 +40,6 @@ var startTime;
 var lastPoint = null;
 var players = {};
 var thisID;
-var gameOver = false;
 var controls = {};
 var background;
 var bullets = {};
@@ -319,6 +318,7 @@ function ServerConnect()
     playerScore = 0;
     localLives = playerLives;
     cameraTranslation = {x:0, y:0};
+    gameState = GAMESTATE.MAINGAME;
     if (canvas.getContext)
     {
         startTime = Date.now();
