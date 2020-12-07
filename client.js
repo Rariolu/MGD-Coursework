@@ -848,10 +848,8 @@ class ClientBullet extends Sprite
         super("bullet");
         this.x = serverBullet.x;
         this.y = serverBullet.y;
-        console.log("X: "+this.x+"; Y: "+this.y);
         this.dX = serverBullet.dX;
         this.dY = serverBullet.dY;
-        console.log("dX: "+this.dX+"; dY: "+this.dY);
         this.bulletID = serverBullet.bulletID;
     }
 }
