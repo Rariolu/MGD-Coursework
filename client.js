@@ -54,6 +54,7 @@ var sounds = {};
 var resourcesLoaded = false;
 var cameraTranslation;
 var gameState = GAMESTATE.MAINGAME;
+var isPaused = false;
 
 //Images
 const imgDown = "/assets/down.png";
@@ -530,45 +531,56 @@ function Update(delta)
 function Render()
 {
     canvasContext.clearRect(0, 0, canvas.width, canvas.height);
-    canvasContext.save();
-    var thisPlayer = players[thisID];
-    if (thisPlayer != null)
+    switch (gameState)
     {
-        var cX = (canvas.width - canvas.offsetLeft) / 2;
-        var cY = (canvas.height - canvas.offsetTop) / 2;
-        cameraTranslation.x = cX - thisPlayer.x;
-        cameraTranslation.y = cY - thisPlayer.y;
-        canvasContext.translate(cameraTranslation.x, cameraTranslation.y);
-        background.Render();
-        thisPlayer.Render();
-    }
-    else
-    {
-        background.Render();
-    }
-    for (let p in players)
-    {
-        if (p != thisID)
+        case GAMESTATE.MAINGAME:
         {
-            players[p].Render();
+            canvasContext.save();
+            var thisPlayer = players[thisID];
+            if (thisPlayer != null)
+            {
+                var cX = (canvas.width - canvas.offsetLeft) / 2;
+                var cY = (canvas.height - canvas.offsetTop) / 2;
+                cameraTranslation.x = cX - thisPlayer.x;
+                cameraTranslation.y = cY - thisPlayer.y;
+                canvasContext.translate(cameraTranslation.x, cameraTranslation.y);
+                background.Render();
+                thisPlayer.Render();
+            }
+            else
+            {
+                background.Render();
+            }
+            for (let p in players)
+            {
+                if (p != thisID)
+                {
+                    players[p].Render();
+                }
+            }
+            for (let b in bullets)
+            {
+                bullets[b].Render();
+            }
+            for (let c in coins)
+            {
+                coins[c].Render();
+            }
+            canvasContext.restore();
+            if (isPaused)
+            {
+                canvasContext.drawImage(GetImage("pause"),0,0,canvas.width,canvas.height);
+            }
+            for (let c in controls)
+            {
+                controls[c].Render();
+            }
+            StyleText("black","10vw arial","centre","top");
+            canvasContext.fillText("Score: " + playerScore, 10, 100);
+            canvasContext.fillText("Lives: "+localLives, 10, canvas.height- canvas.offsetTop - 100);
+            break;
         }
     }
-    for (let b in bullets)
-    {
-        bullets[b].Render();
-    }
-    for (let c in coins)
-    {
-        coins[c].Render();
-    }
-    canvasContext.restore();
-    for (let c in controls)
-    {
-        controls[c].Render();
-    }
-    StyleText("black","10vw arial","centre","top");
-    canvasContext.fillText("Score: " + playerScore, 10, 100);
-    canvasContext.fillText("Lives: "+localLives, 10, canvas.height- canvas.offsetTop - 100);
 }
 
 function RemoveCameraTranslation(pos)
