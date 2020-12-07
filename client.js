@@ -567,10 +567,6 @@ function Render()
                 coins[c].Render();
             }
             canvasContext.restore();
-            if (isPaused)
-            {
-                canvasContext.drawImage(GetImage("pause"),0,0,canvas.width,canvas.height);
-            }
             for (let c in controls)
             {
                 controls[c].Render();
@@ -578,6 +574,10 @@ function Render()
             StyleText("black","10vw arial","centre","top");
             canvasContext.fillText("Score: " + playerScore, 10, 100);
             canvasContext.fillText("Lives: "+localLives, 10, canvas.height- canvas.offsetTop - 100);
+            if (isPaused)
+            {
+                canvasContext.drawImage(GetImage("pause"),0,0,canvas.width,canvas.height);
+            }
             break;
         }
     }
