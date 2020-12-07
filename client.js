@@ -467,7 +467,6 @@ function SetPlayer(id)
 
 function BulletCreated(serverBullet)
 {
-    console.log("bullet created "+serverBullet.bulletID);
     var bullet = new ClientBullet(serverBullet);
     bullets[bullet.bulletID] = bullet;
 }
