@@ -247,25 +247,37 @@ function KeyDown(e)
         case 83: //S
         case 40: //Down
         {
-            socket.emit("dirclick","down");
+            if (!isPaused)
+            {
+                socket.emit("dirclick","down");
+            }
             break;
         }
         case 65: //A
         case 37: //Left
         {
-            socket.emit("dirclick","left");
+            if (!isPaused)
+            {
+                socket.emit("dirclick","left");
+            }
             break;
         }
         case 68: //D
         case 39: //Right
         {
-            socket.emit("dirclick","right");
+            if (!isPaused)
+            {
+                socket.emit("dirclick","right");
+            }
             break;
         }
         case 87: //W
         case 38: //Up
         {
-            socket.emit("dirclick","up");
+            if (!isPaused)
+            {
+                socket.emit("dirclick","up");
+            }
             break;
         }
         case 32: //Space
@@ -276,6 +288,11 @@ function KeyDown(e)
             var y = players[thisID].y;
             var dir = new Vector(players[thisID].dX, players[thisID].dY).Normalise();
             socket.emit("shotfired", {x, y}, dir);*/
+            break;
+        }
+        case 27: //Escape
+        {
+            isPaused = !isPaused;
             break;
         }
     }
