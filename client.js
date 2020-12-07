@@ -1,3 +1,30 @@
+const GAMESTATE =
+{
+    INTRO: "INTRO",
+    MAINGAME: "MAINGAME",
+    GAMEOVER: "GAMEOVER"
+};
+
+const IMAGE = 
+{
+    BTNDOWN: "btnDown",
+    BTNLEFT: "btnLeft",
+    BTNRIGHT: "btnRight",
+    BTNUP: "btnUp",
+    BULLET: "bullet",
+    BACKGROUND: "background",
+    COIN: "coin",
+    PAUSE: "pause"
+};
+
+const CONTROL =
+{
+    DOWN: "down",
+    LEFT: "left",
+    RIGHT: "right",
+    UP: "up"
+};
+
 var RequestAnimFrame = window.requestAnimationFrame ||
                 window.mozRequestAnimationFrame ||
                 window.webkitRequestAnimationFrame ||
@@ -26,6 +53,7 @@ var localLives = playerLives;
 var sounds = {};
 var resourcesLoaded = false;
 var cameraTranslation;
+var gameState = GAMESTATE.MAINGAME;
 
 //Images
 const imgDown = "/assets/down.png";
@@ -296,13 +324,14 @@ function ServerConnect()
         
         if (!resourcesLoaded)
         {
-            AddImage("btnDown",imgDown);
-            AddImage("btnLeft",imgLeft);
-            AddImage("btnRight",imgRight);
-            AddImage("btnUp",imgUp);
-            AddImage("bullet",imgBullet);
-            AddImage("background", imgBackground);
-            AddImage("coin", imgCoin);
+            AddImage(IMAGE.BTNDOWN,imgDown);
+            AddImage(IMAGE.BTNLEFT,imgLeft);
+            AddImage(IMAGE.BTNRIGHT,imgRight);
+            AddImage(IMAGE.BTNUP,imgUp);
+            AddImage(IMAGE.BULLET,imgBullet);
+            AddImage(IMAGE.BACKGROUND, imgBackground);
+            AddImage(IMAGE.COIN, imgCoin);
+            AddImage(IMAGE.PAUSE, imgPause);
 
             for (var i = 0; i < 3; i++)
             {
@@ -315,7 +344,7 @@ function ServerConnect()
             AddAudio("coin", audCoin);
         }
                 
-        var btnDown = new Sprite("btnDown");
+        var btnDown = new Sprite(IMAGE.BTNDOWN);
         btnDown.clickEvent = function()
         {
             players[thisID].dY = playerSpeed;
@@ -325,7 +354,7 @@ function ServerConnect()
             players[thisID].dY = 0;
         };
         
-        var btnLeft = new Sprite("btnLeft");
+        var btnLeft = new Sprite(IMAGE.BTNLEFT);
         btnLeft.clickEvent = function()
         {
             players[thisID].dX = -playerSpeed;
@@ -335,7 +364,7 @@ function ServerConnect()
             players[thisID].dX = 0;
         };
         
-        var btnRight = new Sprite("btnRight");
+        var btnRight = new Sprite(IMAGE.BTNRIGHT);
         btnRight.clickEvent = function()
         {
             players[thisID].dX = playerSpeed;
@@ -345,7 +374,7 @@ function ServerConnect()
             players[thisID].dX = 0;
         };
         
-        var btnUp = new Sprite("btnUp");
+        var btnUp = new Sprite(IMAGE.BTNUP);
         btnUp.clickEvent = function()
         {
             players[thisID].dY = -playerSpeed;
@@ -355,12 +384,12 @@ function ServerConnect()
             players[thisID].dY = 0;
         };
         
-        controls["down"] = btnDown;
-        controls["left"] = btnLeft;
-        controls["right"] = btnRight;
-        controls["up"] = btnUp;
+        controls[CONTROL.DOWN] = btnDown;
+        controls[CONTROL.LEFT] = btnLeft;
+        controls[CONTROL.RIGHT] = btnRight;
+        controls[CONTROL.UP] = btnUp;
         
-        background = new Sprite("background");
+        background = new Sprite(IMAGE.BACKGROUND);
         background.SetDimensions(1500,898);
         
         GameLoop();
@@ -477,13 +506,24 @@ function GameLoop()
 
 function Update(delta)
 {
-    for (let p in players)
+    switch (gameState)
     {
-        players[p].Update(delta);
-    }
-    for (let b in bullets)
-    {
-        bullets[b].Update(delta);
+        case GAMESTATE.MAINGAME:
+        {
+            for (let p in players)
+            {
+                players[p].Update(delta);
+            }
+            for (let b in bullets)
+            {
+                bullets[b].Update(delta);
+            }
+            break;
+        }
+        case GAMESTATE.GAMEOVER:
+        {
+            break;
+        }
     }
 }
 
@@ -810,11 +850,4 @@ class Vector
         this.y /= magnitude;
         return this;
     }
-}
-
-const GAMESTATE
-{
-    INTRO: "INTRO",
-    MAINGAME: "MAINGAME"
-    GAMEOVER: "GAMEOVER"
 }
