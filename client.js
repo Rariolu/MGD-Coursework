@@ -811,3 +811,10 @@ class Vector
         return this;
     }
 }
+
+const GAMESTATE
+{
+    INTRO: "INTRO",
+    MAINGAME: "MAINGAME"
+    GAMEOVER: "GAMEOVER"
+}
