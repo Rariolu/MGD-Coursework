@@ -25,6 +25,7 @@ var playerScore = 0;
 var localLives = playerLives;
 var sounds = {};
 var resourcesLoaded = false;
+var cameraTranslation;
 
 //Images
 const imgDown = "/assets/down.png";
@@ -38,12 +39,69 @@ const imgStarlyDown = "/assets/starly_down_";
 const imgStarlyLeft = "/assets/starly_left_";
 const imgStarlyRight = "/assets/starly_right_";
 const imgStarlyUp = "/assets/starly_up_";
+const imgPause = "/assets/pause.png";
 
 //Audio
 const audCoin = "/assets/coin.wav";
 
+
+function AddImage(name, src)
+{
+    var img = new Image();
+    img.src = src;
+    images[name] = img;
+}
+
+function GetImage(name)
+{
+    if (images[name] != null)
+    {
+        return images[name];
+    }
+    else
+    {
+        console.log("Image \""+name+"\" doesn't exist.");
+    }
+}
+
+function AddAudio(name, src)
+{
+    var audio = new Audio(src);
+    sounds[name] = audio;
+}
+
+function PlaySound(name)
+{
+    if (sounds[name] != null)
+    {
+        sounds[name].play();
+    }
+    else
+    {
+        console.log("Sound \""+name+"\" doesn't exist.");
+    }
+}
+
+function GetMousePosition(mouseEvent)
+{
+    var mouseX = mouseEvent.clientX - canvas.offsetLeft;
+    var mouseY = mouseEvent.clientY - canvas.offsetTop;
+    return {x: mouseX, y:mouseY};
+}
+
+function GetTouchPosition(touchEvent)
+{
+    var touchX = touchEvent.touches[0].pageX - canvas.offsetLeft;
+    var touchY = touchEvent.touches[0].pageY - canvas.offsetTop;
+    return {x:touchX, y:touchY};
+}
+
 function Initialisation()
 {
+    //Getting local canvas element and its canvas rendering context
+    canvas = document.getElementById("cvsGame");
+    canvasContext = canvas.getContext("2d");
+    
     //Setting window input event handlers
     window.addEventListener("resize",ResizeCanvas,false);
     window.addEventListener("orientationchange",ResizeCanvas,false);
@@ -80,6 +138,148 @@ function Initialisation()
     socket.on("playerdied", PlayerDied);
 }
 
+function ResizeCanvas()
+{
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    
+    var cellWidth = canvas.width / 5;
+    var cellHeight = canvas.height / 8;
+    
+    const verticalX = canvas.width/2;
+    
+    controls["down"].SetDimensions(cellWidth,cellHeight*2);
+    controls["left"].SetDimensions(cellWidth*2,cellHeight);
+    controls["right"].SetDimensions(cellWidth*2,cellHeight);
+    controls["up"].SetDimensions(cellWidth,cellHeight*2);
+    
+    controls["down"].y = canvas.height - cellHeight;
+    controls["down"].x = verticalX;
+    
+    controls["left"].x = verticalX - (cellWidth * 2);
+    controls["left"].y = canvas.height - cellHeight;
+    
+    controls["right"].x = verticalX + (cellWidth*2);
+    controls["right"].y = controls["left"].y;
+    
+    controls["up"].y = controls["down"].y - (cellHeight*2);
+    controls["up"].x = verticalX;
+}
+
+function TouchDown(evt)
+{
+    evt.preventDefault();
+    var touchPos = GetTouchPosition(evt);
+    DownInteraction(touchPos);
+}
+
+function MouseDown(evt)
+{
+    evt.preventDefault();
+    var mousePos = GetMousePosition(evt);
+    DownInteraction(mousePos);
+}
+
+function TouchMove(evt)
+{
+    evt.preventDefault();
+    var touchPos = GetTouchPosition();
+    MoveInteraction(touchPos);
+}
+
+function MouseMove(evt)
+{
+    evt.preventDefault();
+    var mousePos = GetMousePosition(evt);
+    MoveInteraction(mousePos);
+}
+
+function TouchUp(evt)
+{
+    evt.preventDefault();
+    var touchPos = GetTouchPosition();
+    UpInteraction(touchPos);
+}
+
+function MouseUp(evt)
+{
+    evt.preventDefault();
+    var mousePos = GetMousePosition(evt);
+    UpInteraction(mousePos);
+}
+
+function KeyDown(e)
+{
+    switch(e.keyCode)
+    {
+        case 83: //S
+        case 40: //Down
+        {
+            socket.emit("dirclick","down");
+            break;
+        }
+        case 65: //A
+        case 37: //Left
+        {
+            socket.emit("dirclick","left");
+            break;
+        }
+        case 68: //D
+        case 39: //Right
+        {
+            socket.emit("dirclick","right");
+            break;
+        }
+        case 87: //W
+        case 38: //Up
+        {
+            socket.emit("dirclick","up");
+            break;
+        }
+        case 32: //Space
+        {
+            socket=io();
+            var x = players[thisID].x;
+            var y = players[thisID].y;
+            socket.emit("shotfired", {x, y},{x:1, y:0} );
+            break;
+        }
+    }
+    
+}
+
+function KeyUp(e)
+{
+    switch(e.keyCode)
+    {
+        case 83: //S
+        case 40: //Down
+        {
+            socket.emit("dirunclick","down");
+            break;
+        }
+        case 65: //A
+        case 37: //Left
+        {
+            socket.emit("dirunclick","left");
+            break;
+        }
+        case 68: //D
+        case 39: //Right
+        {
+            socket.emit("dirunclick","right");
+            break;
+        }
+        case 87: //W
+        case 38: //Up
+        {
+            socket.emit("dirunclick","up");
+            break;
+        }
+    }
+    
+}
+
 function ServerConnect()
 {
     connections++;
@@ -89,11 +289,9 @@ function ServerConnect()
     coins = {};
     playerScore = 0;
     localLives = playerLives;
-    canvas = document.getElementById("cvsGame");
-    canvasContext = canvas.getContext("2d");
+    cameraTranslation = {x:0, y:0};
     if (canvas.getContext)
     {
-        
         startTime = Date.now();
         
         if (!resourcesLoaded)
@@ -171,169 +369,17 @@ function ServerConnect()
     }
 }
 
-function PlayerDied(playerID)
+function PlayerSpawn(serverPlayer)
 {
-    PlayerDespawn(playerID);
+    var player = new ClientPlayer(serverPlayer);
+    players[serverPlayer.playerID] = player;
+    console.log(player.playerID+" spawned");
 }
 
-function PlayerShot(playerID, lives)
+function PlayerDespawn(id)
 {
-    if (playerID == thisID)
-    {
-        localLives = lives;
-    }
-}
-
-function ScoreChanged(score)
-{
-    playerScore = score;
-    PlaySound("coin");
-}
-
-function KeyDown(e)
-{
-    switch(e.keyCode)
-    {
-        case 83: //S
-        case 40: //Down
-        {
-            socket.emit("dirclick","down");
-            break;
-        }
-        case 65: //A
-        case 37: //Left
-        {
-            socket.emit("dirclick","left");
-            break;
-        }
-        case 68: //D
-        case 39: //Right
-        {
-            socket.emit("dirclick","right");
-            break;
-        }
-        case 87: //W
-        case 38: //Up
-        {
-            socket.emit("dirclick","up");
-            break;
-        }
-        case 32: //Space
-        {
-            var x = players[thisID].x;
-            var y = players[thisID].y;
-            socket.emit("shotfired", {x, y},{x:1, y:0} );
-            break;
-        }
-    }
-    
-}
-
-function KeyUp(e)
-{
-    switch(e.keyCode)
-    {
-        case 83: //S
-        case 40: //Down
-        {
-            socket.emit("dirunclick","down");
-            break;
-        }
-        case 65: //A
-        case 37: //Left
-        {
-            socket.emit("dirunclick","left");
-            break;
-        }
-        case 68: //D
-        case 39: //Right
-        {
-            socket.emit("dirunclick","right");
-            break;
-        }
-        case 87: //W
-        case 38: //Up
-        {
-            socket.emit("dirunclick","up");
-            break;
-        }
-    }
-    
-}
-
-function CoinSpawn(serverCoin)
-{
-    var coin = new ClientCoin(serverCoin);
-    coins[serverCoin.coinID] = coin;
-}
-
-function CoinDelete(id)
-{
-    delete coins[id];
-}
-
-function AddImage(name, src)
-{
-    var img = new Image();
-    img.src = src;
-    images[name] = img;
-}
-
-function AddAudio(name, src)
-{
-    var audio = new Audio(src);
-    sounds[name] = audio;
-}
-
-function PlaySound(name)
-{
-    if (sounds[name] != null)
-    {
-        sounds[name].play();
-    }
-    else
-    {
-        console.log("Sound \""+name+"\" doesn't exist.");
-    }
-}
-
-function GetImage(name)
-{
-    if (images[name] != null)
-    {
-        return images[name];
-    }
-    else
-    {
-        console.log("Image \""+name+"\" doesn't exist.");
-    }
-}
-
-function BulletUpdate(id, x, y)
-{
-    console.log("attempting to update "+id);
-    if (bullets[id] != null)
-    {
-        bullets[id].x = x;
-        bullets[id].y = y;
-    }
-}
-
-function BulletCreated(serverBullet)
-{
-    console.log("bullet created "+serverBullet.bulletID);
-    var bullet = new ClientBullet(serverBullet);
-    bullets[bullet.bulletID] = bullet;
-}
-
-function BulletDestroyed(id)
-{
-    delete bullets[id];
-}
-
-function SetPlayer(id)
-{
-    thisID = id;
+    delete players[id];
+    console.log(id+" despawned");
 }
 
 function PosUpdate(id, x, y)
@@ -360,6 +406,209 @@ function VelUpdate(id, dX, dY)
     {
         console.log("Apparently a player doesn't exist: "+id);
     }
+}
+
+function SetPlayer(id)
+{
+    thisID = id;
+}
+
+function BulletCreated(serverBullet)
+{
+    console.log("bullet created "+serverBullet.bulletID);
+    var bullet = new ClientBullet(serverBullet);
+    bullets[bullet.bulletID] = bullet;
+}
+
+function BulletDestroyed(id)
+{
+    delete bullets[id];
+}
+
+function BulletUpdate(id, x, y)
+{
+    if (bullets[id] != null)
+    {
+        bullets[id].x = x;
+        bullets[id].y = y;
+    }
+}
+
+function CoinSpawn(serverCoin)
+{
+    var coin = new ClientCoin(serverCoin);
+    coins[serverCoin.coinID] = coin;
+}
+
+function CoinDelete(id)
+{
+    delete coins[id];
+}
+
+function ScoreChanged(score)
+{
+    playerScore = score;
+    PlaySound("coin");
+}
+
+function PlayerShot(playerID, lives)
+{
+    if (playerID == thisID)
+    {
+        localLives = lives;
+    }
+}
+
+function PlayerDied(playerID)
+{
+    PlayerDespawn(playerID);
+}
+
+
+
+
+
+function GameLoop()
+{
+    var currentTime = Date.now();
+    var delta = (currentTime - startTime)/1000;
+    startTime = currentTime;
+    Update(delta);
+    Render();
+    
+    RequestAnimFrame(GameLoop);
+}
+
+function Update(delta)
+{
+    for (let p in players)
+    {
+        players[p].Update(delta);
+    }
+    for (let b in bullets)
+    {
+        bullets[b].Update(delta);
+    }
+}
+
+
+
+function Render()
+{
+    canvasContext.clearRect(0, 0, canvas.width, canvas.height);
+    canvasContext.save();
+    var thisPlayer = players[thisID];
+    if (thisPlayer != null)
+    {
+        var cX = (canvas.width - canvas.offsetLeft) / 2;
+        var cY = (canvas.height - canvas.offsetTop) / 2;
+        cameraTranslation.x = cX - thisPlayer.x;
+        cameraTranslation.y = cY - thisPlayer.y;
+        canvasContext.translate(cameraTranslation.x, cameraTranslation.y);
+        background.Render();
+        thisPlayer.Render();
+    }
+    else
+    {
+        background.Render();
+    }
+    for (let p in players)
+    {
+        if (p != thisID)
+        {
+            players[p].Render();
+        }
+    }
+    for (let b in bullets)
+    {
+        bullets[b].Render();
+    }
+    for (let c in coins)
+    {
+        coins[c].Render();
+    }
+    canvasContext.restore();
+    for (let c in controls)
+    {
+        controls[c].Render();
+    }
+    StyleText("black","10vw arial","centre","top");
+    canvasContext.fillText("Score: " + playerScore, 10, 100);
+    canvasContext.fillText("Lives: "+localLives, 10, canvas.height- canvas.offsetTop - 100);
+}
+
+
+
+
+
+function RemoveCameraTranslation(pos)
+{
+    return {x:pos.x-cameraTranslation.x, y:pos.y-cameraTranslation.y};
+}
+
+function DownInteraction(pos)
+{
+    mouseDown = true;
+    adjustedPos = RemoveCameraTranslation(pos);
+    if (gameOver)
+    {
+        return;
+    }
+    var controlClicked = false;
+    for (let c in controls)
+    {
+        if (controls[c].Click(pos))
+        {
+            console.log(c+" clicked");
+            socket.emit("dirclick",c);
+            controlClicked = true;
+            break;
+        }
+    }
+    if (!controlClicked)
+    {
+        var x = players[thisID].x;
+        var y = players[thisID].y;
+        var mX = adjustedPos.x;
+        var mY = adjustedPos.y;
+        var x2 = (mX - x) * (mX - x);
+        var y2 = (mY - y) * (mY - y);
+        var d2 = x2 + y2;
+        if (d2 <= (shootDistance*shootDistance))
+        {
+            var v1 = new Vector(mX - x, mY - y);
+            v1 = v1.Normalise();
+            socket.emit("shotfired",{x,y},{x:v1.x, y:v1.y});
+        }
+    }
+    MoveInteraction(pos);
+}
+
+
+function MoveInteraction(pos)
+{
+    lastPoint = pos;
+}
+
+function UpInteraction(pos)
+{
+    mouseDown = false;
+    for (let c in controls)
+    {
+        socket.emit("dirunclick",c);
+        if (controls[c].mouseUp != null)
+        {
+            controls[c].mouseUp();
+        }
+    }
+}
+
+function StyleText(colour, font, alignment, baseLine)
+{
+    canvasContext.fillStyle = colour;
+    canvasContext.font = font;
+    canvasContext.textAlign = alignment;
+    canvasContext.textBaseline = baseLine;
 }
 
 class AnimationManager
@@ -406,8 +655,6 @@ class Sprite
     {
         this.clickEvent = null;
         this.mouseUp = null;
-        //this.image = new Image();
-        //this.image.src = imagePath;
         this.imageName = imagePath;
         this.x = 0;
         this.y = 0;
@@ -480,7 +727,6 @@ class Sprite
     }
     Render()
     {
-        //canvasContext.drawImage(this.image, this.Left(), this.Bottom(), this.Width(), this.Height());
         canvasContext.drawImage(this.GetImage(), this.Left(), this.Bottom(), this.Width(), this.Height());
     }
     RenderCustom(rX, rY)
@@ -500,7 +746,6 @@ class ClientPlayer extends Sprite
     {
         super("starly_down_0");
         this.animManager = new AnimationManager("starly", 3, 0.5);
-        //super("70sRowlette.png");
         this.x = serverPlayer.x;
         this.y = serverPlayer.y;
         this.dX = serverPlayer.dX;
@@ -510,17 +755,7 @@ class ClientPlayer extends Sprite
         this.frameY = 0;
         this.frameXMax = 0.5;
         this.frameTimer = this.frameXMax;
-        this.SetDimensions(20,20);
-    }
-    AnimationFrame(delta)
-    {
-        /*this.frameTimer -= delta;
-        if (this.frameTimer <= 0)
-        {
-            this.frameTimer = this.frameXMax;
-            this.frameX++;
-            this.frameX = this.frameX % 3;
-        }*/
+        this.SetDimensions(200,200);
     }
     Render()
     {
@@ -537,20 +772,13 @@ class ClientPlayer extends Sprite
         {
             dir = "up";
         }
-
-        const spriteWidth = 20;
-        const spriteHeight = 20;
-        var tempX = spriteWidth * this.frameX;
-        var tempY = spriteHeight * this.frameY;
         var img = this.animManager.GetImage(dir);
-        canvasContext.drawImage(img, this.Left(), this.Bottom(), 200, 200);
-        //canvasContext.drawImage(, tempX, tempY, spriteWidth, spriteHeight, this.Left(), this.Bottom(), 200, 350);
+        canvasContext.drawImage(img, this.Left(), this.Bottom(), this.Width(), this.Height());
     }
     Update(delta)
     {
         super.Update(delta);
         this.animManager.Update(delta);
-        //this.AnimationFrame(delta);
     }
 }
 
@@ -559,7 +787,6 @@ class ClientBullet extends Sprite
     constructor(serverBullet)
     {
         super("bullet");
-        //super("/bullet.png");
         this.x = serverBullet.x;
         this.y = serverBullet.y;
         console.log("X: "+this.x+"; Y: "+this.y);
@@ -581,174 +808,6 @@ class ClientCoin extends Sprite
     }
 }
 
-function PlayerSpawn(serverPlayer)
-{
-    var player = new ClientPlayer(serverPlayer);
-    players[serverPlayer.playerID] = player;
-    console.log(player.playerID+" spawned");
-}
-
-function PlayerDespawn(id)
-{
-    delete players[id];
-    console.log(id+" despawned");
-}
-
-function GameLoop()
-{
-    var currentTime = Date.now();
-    var delta = (currentTime - startTime)/1000;
-    startTime = currentTime;
-    Update(delta);
-    Render();
-    
-    RequestAnimFrame(GameLoop);
-}
-
-function Update(delta)
-{
-    for (let p in players)
-    {
-        players[p].Update(delta);
-    }
-    for (let b in bullets)
-    {
-        bullets[b].Update(delta);
-    }
-}
-
-var cameraTranslation = {x:0, y:0};
-
-function Render()
-{
-    canvasContext.clearRect(0, 0, canvas.width, canvas.height);
-    canvasContext.save();
-    var thisPlayer = players[thisID];
-    if (thisPlayer != null)
-    {
-        var cX = (canvas.width - canvas.offsetLeft) / 2;
-        var cY = (canvas.height - canvas.offsetTop) / 2;
-        cameraTranslation.x = cX - thisPlayer.x;
-        cameraTranslation.y = cY - thisPlayer.y;
-        canvasContext.translate(cameraTranslation.x, cameraTranslation.y);
-        background.Render();
-        thisPlayer.Render();
-    }
-    else
-    {
-        background.Render();
-    }
-    for (let p in players)
-    {
-        if (p != thisID)
-        {
-            players[p].Render();
-        }
-    }
-    for (let b in bullets)
-    {
-        bullets[b].Render();
-    }
-    for (let c in coins)
-    {
-        coins[c].Render();
-    }
-    canvasContext.restore();
-    for (let c in controls)
-    {
-        controls[c].Render();
-    }
-    StyleText("black","10vw arial","centre","top");
-    canvasContext.fillText("Score: " + playerScore, 10, 100);
-    canvasContext.fillText("Lives: "+localLives, 10, canvas.height- canvas.offsetTop - 100);
-}
-
-function ResizeCanvas()
-{
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-    
-    var cellWidth = canvas.width / 5;
-    var cellHeight = canvas.height / 8;
-    
-    const verticalX = canvas.width/2;
-    
-    controls["down"].SetDimensions(cellWidth,cellHeight*2);
-    controls["left"].SetDimensions(cellWidth*2,cellHeight);
-    controls["right"].SetDimensions(cellWidth*2,cellHeight);
-    controls["up"].SetDimensions(cellWidth,cellHeight*2);
-    
-    //controls["down"].y = canvas.height - controls["down"].Height();
-    controls["down"].y = canvas.height - cellHeight;
-    controls["down"].x = verticalX;
-    
-    controls["left"].x = verticalX - (cellWidth * 2);
-    controls["left"].y = canvas.height - cellHeight;
-    
-    controls["right"].x = verticalX + (cellWidth*2);
-    controls["right"].y = controls["left"].y;
-    
-    controls["up"].y = controls["down"].y - (cellHeight*2);
-    controls["up"].x = verticalX;
-}
-
-function GetMousePosition(mouseEvent)
-{
-    var mouseX = mouseEvent.clientX - canvas.offsetLeft;
-    var mouseY = mouseEvent.clientY - canvas.offsetTop;
-    return {x: mouseX, y:mouseY};
-}
-
-function GetTouchPosition(touchEvent)
-{
-    var touchX = touchEvent.touches[0].pageX - canvas.offsetLeft;
-    var touchY = touchEvent.touches[0].pageY - canvas.offsetTop;
-    return {x:touchX, y:touchY};
-}
-
-function RemoveCameraTranslation(pos)
-{
-    return {x:pos.x-cameraTranslation.x, y:pos.y-cameraTranslation.y};
-}
-
-function DownInteraction(pos)
-{
-    mouseDown = true;
-    adjustedPos = RemoveCameraTranslation(pos);
-    if (gameOver)
-    {
-        return;
-    }
-    var controlClicked = false;
-    for (let c in controls)
-    {
-        if (controls[c].Click(pos))
-        {
-            console.log(c+" clicked");
-            socket.emit("dirclick",c);
-            controlClicked = true;
-            break;
-        }
-    }
-    if (!controlClicked)
-    {
-        var x = players[thisID].x;
-        var y = players[thisID].y;
-        var mX = adjustedPos.x;
-        var mY = adjustedPos.y;
-        var x2 = (mX - x) * (mX - x);
-        var y2 = (mY - y) * (mY - y);
-        var d2 = x2 + y2;
-        if (d2 <= (shootDistance*shootDistance))
-        {
-            var v1 = new Vector(mX - x, mY - y);
-            v1 = v1.Normalise();
-            socket.emit("shotfired",{x,y},{x:v1.x, y:v1.y});
-        }
-    }
-    MoveInteraction(pos);
-}
-
 class Vector
 {
     constructor(x, y)
@@ -765,88 +824,4 @@ class Vector
         this.y /= magnitude;
         return this;
     }
-}
-
-/*
-var Vector = function(x,y)
-{
-    this.x = x;
-    this.y = y;
-} 
-
-Vector.prototype.normalize = function()
-{
-    var length = Math.sqrt(this.x*this.x+this.y*this.y); //calculating length
-    this.x = this.x/length; //assigning new value to x (dividing x by length of the vector)
-    this.y= this.y/length; //assigning new value to y
-    return this;
-}*/
-
-
-function MoveInteraction(pos)
-{
-    lastPoint = pos;
-}
-
-function UpInteraction(pos)
-{
-    mouseDown = false;
-    for (let c in controls)
-    {
-        socket.emit("dirunclick",c);
-        if (controls[c].mouseUp != null)
-        {
-            controls[c].mouseUp();
-        }
-    }
-}
-
-function MouseDown(evt)
-{
-    evt.preventDefault();
-    var mousePos = GetMousePosition(evt);
-    DownInteraction(mousePos);
-}
-
-function TouchDown(evt)
-{
-    evt.preventDefault();
-    var touchPos = GetTouchPosition(evt);
-    DownInteraction(touchPos);
-}
-
-function MouseMove(evt)
-{
-    evt.preventDefault();
-    var mousePos = GetMousePosition(evt);
-    MoveInteraction(mousePos);
-}
-
-function TouchMove(evt)
-{
-    evt.preventDefault();
-    var touchPos = GetTouchPosition();
-    MoveInteraction(touchPos);
-}
-
-function MouseUp(evt)
-{
-    evt.preventDefault();
-    var mousePos = GetMousePosition(evt);
-    UpInteraction(mousePos);
-}
-
-function TouchUp(evt)
-{
-    evt.preventDefault();
-    var touchPos = GetTouchPosition();
-    UpInteraction(touchPos);
-}
-
-function StyleText(colour, font, alignment, baseLine)
-{
-    canvasContext.fillStyle = colour;
-    canvasContext.font = font;
-    canvasContext.textAlign = alignment;
-    canvasContext.textBaseline = baseLine;
 }
