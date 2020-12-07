@@ -341,31 +341,32 @@ function ServerConnect()
     localLives = playerLives;
     cameraTranslation = {x:0, y:0};
     gameState = GAMESTATE.MAINGAME;
+    
+    if (!resourcesLoaded)
+    {
+        AddImage(IMAGE.BTNDOWN,imgDown);
+        AddImage(IMAGE.BTNLEFT,imgLeft);
+        AddImage(IMAGE.BTNRIGHT,imgRight);
+        AddImage(IMAGE.BTNUP,imgUp);
+        AddImage(IMAGE.BULLET,imgBullet);
+        AddImage(IMAGE.BACKGROUND, imgBackground);
+        AddImage(IMAGE.COIN, imgCoin);
+        AddImage(IMAGE.PAUSE, imgPause);
+
+        for (var i = 0; i < 3; i++)
+        {
+            AddImage("starly_down_"+i, imgStarlyDown + i + ".png");
+            AddImage("starly_left_"+i,imgStarlyLeft + i + ".png");
+            AddImage("starly_right_"+i, imgStarlyRight + i + ".png");
+            AddImage("starly_up_"+i, imgStarlyUp + i + ".png");
+        }
+
+        AddAudio(AUDIO.COIN, audCoin);
+    }
+    
     if (canvas.getContext)
     {
         startTime = Date.now();
-        
-        if (!resourcesLoaded)
-        {
-            AddImage(IMAGE.BTNDOWN,imgDown);
-            AddImage(IMAGE.BTNLEFT,imgLeft);
-            AddImage(IMAGE.BTNRIGHT,imgRight);
-            AddImage(IMAGE.BTNUP,imgUp);
-            AddImage(IMAGE.BULLET,imgBullet);
-            AddImage(IMAGE.BACKGROUND, imgBackground);
-            AddImage(IMAGE.COIN, imgCoin);
-            AddImage(IMAGE.PAUSE, imgPause);
-
-            for (var i = 0; i < 3; i++)
-            {
-                AddImage("starly_down_"+i, imgStarlyDown + i + ".png");
-                AddImage("starly_left_"+i,imgStarlyLeft + i + ".png");
-                AddImage("starly_right_"+i, imgStarlyRight + i + ".png");
-                AddImage("starly_up_"+i, imgStarlyUp + i + ".png");
-            }
-
-            AddAudio(AUDIO.COIN, audCoin);
-        }
                 
         var btnDown = new Sprite(IMAGE.BTNDOWN);
         btnDown.clickEvent = function()
