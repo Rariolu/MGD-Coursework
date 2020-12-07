@@ -14,6 +14,29 @@ const playerLives = 3;
 const playerWidth = 200;
 const playerHeight = 200;
 
+const SOCKET_EVENT = 
+{
+    SERVER_CONNECT: "serverconnect",
+    SPAWN: "spawn",
+    DESPAWN: "despawn",
+    POS_UPDATE: "posupdate",
+    VEL_UPDATE: "velupdate",
+    SET_PLAYER_ID: "setplayer",
+    BULLET_CREATED: "bulletcreated",
+    BULLET_DESTROYED: "bulletdestroyed",
+    BULLET_UPDATE: "bulletupdate",
+    COIN_SPAWN: "coinspawn",
+    COIN_DESPAWN: "coindespawn",
+    SCORE_CHANGED: "scorechanged",
+    PLAYER_SHOT: "playershot",
+    PLAYER_DIED: "playerdied",
+    DIR_CLICK: "dirclick",
+    DIR_UNCLICK: "dirunclick",
+    SHOT_FIRED: "shotfired",
+    CONNECTION: "connection",
+    DISCONNECTION: "disconnect"
+};
+
 if (typeof process === 'object')
 //Check if the script is running on the server
 {
@@ -32,4 +55,5 @@ if (typeof process === 'object')
     exports.playerLives = playerLives;
     exports.playerWidth = playerWidth;
     exports.playerHeight = playerHeight;
+    exports.SOCKET_EVENT = SOCKET_EVENT;
 }

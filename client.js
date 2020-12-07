@@ -154,20 +154,20 @@ function Initialisation()
     
     //Setting websockets event handlers
     socket = io();
-    socket.on("serverconnect", ServerConnect);
-    socket.on("spawn", PlayerSpawn);
-    socket.on("despawn", PlayerDespawn);
-    socket.on("posupdate", PosUpdate);
-    socket.on("velupdate", VelUpdate);
-    socket.on("setplayer", SetPlayer);
-    socket.on("bulletcreated", BulletCreated);
-    socket.on("bulletdestroyed", BulletDestroyed);
-    socket.on("bulletupdate", BulletUpdate);
-    socket.on("coinspawn", CoinSpawn);
-    socket.on("coindespawn", CoinDelete);
-    socket.on("scorechanged", ScoreChanged);
-    socket.on("playershot", PlayerShot);
-    socket.on("playerdied", PlayerDied);
+    socket.on(SOCKET_EVENT.SERVER_CONNECT, ServerConnect);
+    socket.on(SOCKET_EVENT.SPAWN, PlayerSpawn);
+    socket.on(SOCKET_EVENT.DESPAWN, PlayerDespawn);
+    socket.on(SOCKET_EVENT.POS_UPDATE, PosUpdate);
+    socket.on(SOCKET_EVENT.VEL_UPDATE, VelUpdate);
+    socket.on(SOCKET_EVENT.SET_PLAYER_ID, SetPlayer);
+    socket.on(SOCKET_EVENT.BULLET_CREATED, BulletCreated);
+    socket.on(SOCKET_EVENT.BULLET_DESTROYED, BulletDestroyed);
+    socket.on(SOCKET_EVENT.BULLET_UPDATE, BulletUpdate);
+    socket.on(SOCKET_EVENT.COIN_SPAWN, CoinSpawn);
+    socket.on(SOCKET_EVENT.COIN_DESPAWN, CoinDelete);
+    socket.on(SOCKET_EVENT.SCORE_CHANGED, ScoreChanged);
+    socket.on(SOCKET_EVENT.PLAYER_SHOT, PlayerShot);
+    socket.on(SOCKET_EVENT.PLAYER_DIED, PlayerDied);
 }
 
 function ResizeCanvas()
@@ -249,7 +249,7 @@ function KeyDown(e)
         {
             if (!isPaused)
             {
-                socket.emit("dirclick","down");
+                socket.emit(SOCKET_EVENT.DIR_CLICK,"down");
             }
             break;
         }
@@ -258,7 +258,7 @@ function KeyDown(e)
         {
             if (!isPaused)
             {
-                socket.emit("dirclick","left");
+                socket.emit(SOCKET_EVENT.DIR_CLICK,"left");
             }
             break;
         }
@@ -267,7 +267,7 @@ function KeyDown(e)
         {
             if (!isPaused)
             {
-                socket.emit("dirclick","right");
+                socket.emit(SOCKET_EVENT.DIR_CLICK,"right");
             }
             break;
         }
@@ -276,7 +276,7 @@ function KeyDown(e)
         {
             if (!isPaused)
             {
-                socket.emit("dirclick","up");
+                socket.emit(SOCKET_EVENT.DIR_CLICK,"up");
             }
             break;
         }
@@ -305,25 +305,25 @@ function KeyUp(e)
         case 83: //S
         case 40: //Down
         {
-            socket.emit("dirunclick","down");
+            socket.emit(SOCKET_EVENT.DIR_UNCLICK,"down");
             break;
         }
         case 65: //A
         case 37: //Left
         {
-            socket.emit("dirunclick","left");
+            socket.emit(SOCKET_EVENT.DIR_UNCLICK,"left");
             break;
         }
         case 68: //D
         case 39: //Right
         {
-            socket.emit("dirunclick","right");
+            socket.emit(SOCKET_EVENT.DIR_UNCLICK,"right");
             break;
         }
         case 87: //W
         case 38: //Up
         {
-            socket.emit("dirunclick","up");
+            socket.emit(SOCKET_EVENT.DIR_UNCLICK,"up");
             break;
         }
     }
@@ -619,8 +619,7 @@ function DownInteraction(pos)
     {
         if (controls[c].Click(pos))
         {
-            console.log(c+" clicked");
-            socket.emit("dirclick",c);
+            socket.emit(SOCKET_EVENT.DIR_CLICK,c);
             controlClicked = true;
             break;
         }
@@ -638,7 +637,7 @@ function DownInteraction(pos)
         {
             var v1 = new Vector(mX - x, mY - y);
             v1 = v1.Normalise();
-            socket.emit("shotfired",{x,y},{x:v1.x, y:v1.y});
+            socket.emit(SOCKET_EVENT.SHOT_FIRED,{x,y},{x:v1.x, y:v1.y});
         }
     }
     MoveInteraction(pos);
@@ -655,7 +654,7 @@ function UpInteraction(pos)
     mouseDown = false;
     for (let c in controls)
     {
-        socket.emit("dirunclick",c);
+        socket.emit(SOCKET_EVENT.DIR_UNCLICK,c);
         if (controls[c].mouseUp != null)
         {
             controls[c].mouseUp();

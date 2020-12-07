@@ -199,7 +199,7 @@ function SpawnExistingPlayers(socket)
 {
     for (let p in players)
     {
-        socket.emit("spawn",players[p]);
+        socket.emit(util.SOCKET_EVENT.SPAWN,players[p]);
     }
 }
 
@@ -221,7 +221,7 @@ function SpawnCoins(socket)
 {
     for (let c in coins)
     {
-        socket.emit("coinspawn",coins[c]);
+        socket.emit(util.SOCKET_EVENT.COIN_SPAWN,coins[c]);
     }
 }
 
@@ -229,7 +229,7 @@ function SpawnBullets(socket)
 {
     for (let b in bullets)
     {
-        socket.emit("bulletcreated",bullets[b]);
+        socket.emit(util.SOCKET_EVENT.BULLET_CREATED,bullets[b]);
     }
 }
 
@@ -238,7 +238,7 @@ var ioConnection = function(socket)
 {
     console.log("Client connected.");   
     var playerID = playerCount++;
-    socket.emit("serverconnect");
+    socket.emit(util.SOCKET_EVENT.SERVER_CONNECT);
     SpawnExistingPlayers(socket);
     SpawnBullets(socket);
     SpawnCoins(socket);
@@ -246,17 +246,17 @@ var ioConnection = function(socket)
     
     var scoreChanged = function(score)
     {
-        socket.emit("scorechanged", score);
+        socket.emit(util.SOCKET_EVENT.SCORE_CHANGED, score);
     }
     player.scoreChanged = scoreChanged;
     
     var playerShot = function(lives)
     {
-        socket.emit("playershot", playerID, lives);
+        socket.emit(util.SOCKET_EVENT.PLAYER_SHOT, playerID, lives);
     };
     player.playerShot = playerShot;
     
-    socket.emit("setplayer",playerID);
+    socket.emit(util.SOCKET_EVENT.SET_PLAYER_ID, playerID);
     
     var dirClick = function(btnID)
     {
@@ -284,10 +284,10 @@ var ioConnection = function(socket)
             }
         }
         
-        socket.emit("velupdate",playerID, players[playerID].dX, players[playerID].dY);
+        socket.emit(util.SOCKET_EVENT.VEL_UPDATE, playerID, players[playerID].dX, players[playerID].dY);
     };
     
-    socket.on("dirclick", dirClick);
+    socket.on(util.SOCKET_EVENT.DIR_CLICK, dirClick);
     
     var dirUnClick = function(btnID)
     {
@@ -306,37 +306,37 @@ var ioConnection = function(socket)
                 break;
             }
         }
-        socket.emit("velupdate",playerID, players[playerID].dX, players[playerID].dY);
+        socket.emit(util.SOCKET_EVENT.VEL_UPDATE,playerID, players[playerID].dX, players[playerID].dY);
     };
     
-    socket.on("dirunclick", dirUnClick);
+    socket.on(util.SOCKET_EVENT.DIR_UNCLICK, dirUnClick);
      
     var shotFired = function(pos, dir)
     {
         var bulletID = bulletCount++;
         var bullet = new ServerBullet(bulletID, pos, dir, playerID);
         bullets[bulletID] =  bullet;
-        io.emit("bulletcreated",bullet);
+        io.emit(util.SOCKET_EVENT.BULLET_CREATED, bullet);
     };
     
-    socket.on("shotfired", shotFired);
+    socket.on(util.SOCKET_EVENT.SHOT_FIRED, shotFired);
     
     var ioDisconnection = function()
     {
         console.log("Client disconnected.");
         PlayerDespawn(playerID);
     };
-    socket.on("disconnect",ioDisconnection);
+    socket.on(util.SOCKET_EVENT.DISCONNECTION, ioDisconnection);
 };
 
-io.on("connection",ioConnection);
+io.on(util.SOCKET_EVENT.CONNECTION, ioConnection);
 
 
 
 function DestroyBullet(id)
 {
     delete bullets[id];
-    io.emit("bulletdestroyed",id);
+    io.emit(util.SOCKET_EVENT.BULLET_DESTROYED, id);
 }
 
 function CreateCoin()
@@ -347,13 +347,13 @@ function CreateCoin()
     var pos = {x:posX, y:posY};
     var coin = new ServerCoin(coinID,pos);
     coins[coinID] = coin;
-    io.emit("coinspawn", coin);
+    io.emit(util.SOCKET_EVENT.COIN_SPAWN, coin);
 }
 
 function DestroyCoin(id)
 {
     delete coins[id];
-    io.emit("coindespawn",id);
+    io.emit(util.SOCKET_EVENT.COIN_DESPAWN, id);
 }
 
 function Update()
@@ -368,10 +368,6 @@ function Update()
     for (let b in bullets)
     {
         bullets[b].Update(delta);
-        /*if (bullets[b].OutsideRange())
-        {
-            DestroyBullet(b);
-        }*/
     }
     for (let c in coins)
     {
