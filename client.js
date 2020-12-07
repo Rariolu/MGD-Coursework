@@ -44,7 +44,6 @@ const imgPause = "/assets/pause.png";
 //Audio
 const audCoin = "/assets/coin.wav";
 
-
 function AddImage(name, src)
 {
     var img = new Image();
@@ -238,14 +237,15 @@ function KeyDown(e)
         }
         case 32: //Space
         {
-            socket=io();
+            //socket=io();
+            /*
             var x = players[thisID].x;
             var y = players[thisID].y;
-            socket.emit("shotfired", {x, y},{x:1, y:0} );
+            var dir = new Vector(players[thisID].dX, players[thisID].dY).Normalise();
+            socket.emit("shotfired", {x, y}, dir);*/
             break;
         }
     }
-    
 }
 
 function KeyUp(e)
@@ -464,10 +464,6 @@ function PlayerDied(playerID)
     PlayerDespawn(playerID);
 }
 
-
-
-
-
 function GameLoop()
 {
     var currentTime = Date.now();
@@ -490,8 +486,6 @@ function Update(delta)
         bullets[b].Update(delta);
     }
 }
-
-
 
 function Render()
 {
@@ -536,10 +530,6 @@ function Render()
     canvasContext.fillText("Score: " + playerScore, 10, 100);
     canvasContext.fillText("Lives: "+localLives, 10, canvas.height- canvas.offsetTop - 100);
 }
-
-
-
-
 
 function RemoveCameraTranslation(pos)
 {
