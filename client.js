@@ -17,6 +17,11 @@ const IMAGE =
     PAUSE: "pause"
 };
 
+const AUDIO =
+{
+    COIN: "coin"
+};
+
 const CONTROL =
 {
     DOWN: "down",
@@ -342,7 +347,7 @@ function ServerConnect()
                 AddImage("starly_up_"+i, imgStarlyUp + i + ".png");
             }
 
-            AddAudio("coin", audCoin);
+            AddAudio(AUDIO.COIN, audCoin);
         }
                 
         var btnDown = new Sprite(IMAGE.BTNDOWN);
@@ -478,7 +483,7 @@ function CoinDelete(id)
 function ScoreChanged(score)
 {
     playerScore = score;
-    PlaySound("coin");
+    PlaySound(AUDIO.COIN);
 }
 
 function PlayerShot(playerID, lives)
