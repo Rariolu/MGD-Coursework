@@ -229,27 +229,19 @@ function SpawnBullets(socket)
 
 var ioConnection = function(socket)
 {
-    console.log("Client connected.");   
-    var playerID = playerCount++;
+    console.log("Client connected.");
+    
+    var playerSpawned = false;
+    var playerID;
+    var playerNickname;
+    var player;
+    
     socket.emit(util.SOCKET_EVENT.SERVER_CONNECT);
     SpawnExistingPlayers(socket);
     SpawnBullets(socket);
     SpawnCoins(socket);
-    var player = PlayerSpawn(playerID, socket);
     
-    var scoreChanged = function(score)
-    {
-        socket.emit(util.SOCKET_EVENT.SCORE_CHANGED, score);
-    }
-    player.scoreChanged = scoreChanged;
     
-    var playerShot = function(lives)
-    {
-        socket.emit(util.SOCKET_EVENT.PLAYER_SHOT, playerID, lives);
-    };
-    player.playerShot = playerShot;
-    
-    socket.emit(util.SOCKET_EVENT.SET_PLAYER_ID, playerID);
     
     var dirClick = function(btnID)
     {
@@ -280,7 +272,7 @@ var ioConnection = function(socket)
         socket.emit(util.SOCKET_EVENT.VEL_UPDATE, playerID, players[playerID].dX, players[playerID].dY);
     };
     
-    socket.on(util.SOCKET_EVENT.DIR_CLICK, dirClick);
+    
     
     var dirUnClick = function(btnID)
     {
@@ -302,7 +294,7 @@ var ioConnection = function(socket)
         socket.emit(util.SOCKET_EVENT.VEL_UPDATE,playerID, players[playerID].dX, players[playerID].dY);
     };
     
-    socket.on(util.SOCKET_EVENT.DIR_UNCLICK, dirUnClick);
+    
      
     var shotFired = function(pos, dir)
     {
@@ -312,7 +304,34 @@ var ioConnection = function(socket)
         io.emit(util.SOCKET_EVENT.BULLET_CREATED, bullet);
     };
     
-    socket.on(util.SOCKET_EVENT.SHOT_FIRED, shotFired);
+
+    
+    var receiveNickname = function(nickname)
+    {
+        playerNickname = nickname;
+        console.log(playerNickname);
+        playerID = playerCount++;
+        player = PlayerSpawn(playerID, socket);
+        socket.emit(util.SOCKET_EVENT.SET_PLAYER_ID, playerID);
+        
+        var scoreChanged = function(score)
+        {
+            socket.emit(util.SOCKET_EVENT.SCORE_CHANGED, score);
+        }
+        player.scoreChanged = scoreChanged;
+
+        var playerShot = function(lives)
+        {
+            socket.emit(util.SOCKET_EVENT.PLAYER_SHOT, playerID, lives);
+        };
+        player.playerShot = playerShot;
+        
+        socket.on(util.SOCKET_EVENT.DIR_CLICK, dirClick);
+        socket.on(util.SOCKET_EVENT.DIR_UNCLICK, dirUnClick);
+        socket.on(util.SOCKET_EVENT.SHOT_FIRED, shotFired);
+    };
+    
+    socket.on(util.SOCKET_EVENT.SEND_NICKNAME, receiveNickname);
     
     var ioDisconnection = function()
     {
