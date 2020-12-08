@@ -719,6 +719,30 @@ function StyleText(colour, font, alignment, baseLine)
     canvasContext.textBaseline = baseLine;
 }
 
+function btnSubmit_Click()
+{
+    var tbNickname = document.getElementById("tbNickname");
+    if (tbNickname != null)
+    {
+        var nickname = tbNickname.value;
+        console.log(nickname);
+        socket.emit(SOCKET_EVENT.SEND_NICKNAME,nickname);
+    }
+    else
+    {
+        console.log("Couldn't find tbNickname.");
+    }
+    var topBar = document.getElementById("topbar");
+    if (topBar != null)
+    {
+        topBar.remove();
+    }
+    else
+    {
+        console.log("\"topBar\" not found.");    
+    }
+}
+
 class AnimationManager
 {
     constructor(name, iters, duration)
