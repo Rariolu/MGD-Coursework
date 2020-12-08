@@ -34,7 +34,8 @@ const SOCKET_EVENT =
     DIR_UNCLICK: "dirunclick",
     SHOT_FIRED: "shotfired",
     CONNECTION: "connection",
-    DISCONNECTION: "disconnect"
+    DISCONNECTION: "disconnect",
+    SEND_NICKNAME: "sendnickname"
 };
 
 if (typeof process === 'object')
