@@ -39,9 +39,10 @@ class GameEntity
 
 class ServerPlayer extends GameEntity
 {
-    constructor(id)
+    constructor(id, nickname)
     {
         super();
+        this.playerNickname = nickname;
         this.playerID = id;
         this.score = 0;
         this.scoreChanged = null;
@@ -196,9 +197,9 @@ function SpawnExistingPlayers(socket)
     }
 }
 
-function PlayerSpawn(id, socket)
+function PlayerSpawn(id, nickname, socket)
 {
-    var player = new ServerPlayer(id);
+    var player = new ServerPlayer(id,nickname);
     players[id] = player;
     io.emit("spawn", player);
     return player;
@@ -304,14 +305,18 @@ var ioConnection = function(socket)
         io.emit(util.SOCKET_EVENT.BULLET_CREATED, bullet);
     };
     
-
+    var initialisePlayer = function()
+    {
+        
+    };
     
     var receiveNickname = function(nickname)
     {
         playerNickname = nickname;
         console.log(playerNickname);
         playerID = playerCount++;
-        player = PlayerSpawn(playerID, socket);
+        player = PlayerSpawn(playerID, nickname, socket);
+        playerSpawned = true;
         socket.emit(util.SOCKET_EVENT.SET_PLAYER_ID, playerID);
         
         var scoreChanged = function(score)
@@ -335,8 +340,11 @@ var ioConnection = function(socket)
     
     var ioDisconnection = function()
     {
-        console.log("Client disconnected.");
-        PlayerDespawn(playerID);
+        if (playerSpawned)
+        {
+            console.log("Client disconnected.");
+            PlayerDespawn(playerID);
+        }
     };
     socket.on(util.SOCKET_EVENT.DISCONNECTION, ioDisconnection);
 };
