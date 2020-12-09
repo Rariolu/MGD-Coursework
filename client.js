@@ -731,7 +731,7 @@ function btnSubmit_Click()
     }
     else
     {
-        console.log("Couldn't find tbNickname.");
+        console.log("Couldn't find \"tbNickname\".");
     }
     var topBar = document.getElementById("topbar");
     if (topBar != null)
