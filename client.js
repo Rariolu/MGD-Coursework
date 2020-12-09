@@ -130,6 +130,19 @@ function GetTouchPosition(touchEvent)
 
 function Initialisation()
 {
+    var tbNickname =    document.getElementById("tbNickname");
+    var tbNickname_KeyUp = function(event)
+    {
+        event.preventDefault();
+        if (event.keyCode === 13)
+        {
+            var btnSubmit = document.getElementById("btnSubmit");
+            btnSubmit.click();
+        }
+    };
+    
+    tbNickname.addEventListener("keyup", tbNickname_KeyUp);
+    
     //Getting local canvas element and its canvas rendering context
     canvas = document.getElementById("cvsGame");
     canvasContext = canvas.getContext("2d");
