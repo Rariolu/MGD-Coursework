@@ -4,12 +4,22 @@
         <script src="/socket.io/socket.io.js"></script>
         <script src="/util.js"></script>
         <script src="/client.js"></script>
+        <style>
+            .center
+            {
+                margin: auto;
+                width: 60%;
+                border: 3px solid #73AD21;
+                padding: 10px;
+            }
+        </style>
     </head>
     <body onload="Initialisation();">
         <div id = "topbar" width ="100%" height = "10%">
-            <p id = "lblNickname">Enter nickname:</p>
-            <input id="tbNickname" type="text">
-            <input id="btnSubmit" type="submit" onclick="btnSubmit_Click();">
+            <p id = "lblNickname" class="centre">Enter nickname:
+                <input id="tbNickname" type="text">
+                <input id="btnSubmit" type="submit" onclick="btnSubmit_Click();">
+            </p>
         </div>
         <canvas id="cvsGame">
         
