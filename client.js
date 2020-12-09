@@ -347,7 +347,7 @@ function ServerConnect()
     playerScore = 0;
     localLives = playerLives;
     cameraTranslation = {x:0, y:0};
-    gameState = GAMESTATE.MAINGAME;
+    gameState = GAMESTATE.INTRO;
     
     if (!resourcesLoaded)
     {
@@ -495,6 +495,7 @@ function VelUpdate(id, dX, dY)
 function SetPlayer(id)
 {
     thisID = id;
+    gameState = GAMESTATE.MAINGAME;
 }
 
 function BulletCreated(serverBullet)
@@ -628,7 +629,7 @@ function Render()
             {
                 controls[c].Render();
             }
-            StyleText("black","10vw arial","centre","top");
+            StyleText("black","50px arial","centre","top");
             canvasContext.fillText("Score: " + playerScore, 10, 100);
             canvasContext.fillText("Lives: "+localLives, 10, canvas.height- canvas.offsetTop - 100);
             if (isPaused)
@@ -882,6 +883,7 @@ class ClientPlayer extends Sprite
         this.y = serverPlayer.y;
         this.dX = serverPlayer.dX;
         this.dY = serverPlayer.dY;
+        this.playerNickname = serverPlayer.playerNickname;
         this.playerID = serverPlayer.playerID;
         this.frameX = 0;
         this.frameY = 0;
@@ -906,6 +908,8 @@ class ClientPlayer extends Sprite
         }
         var img = this.animManager.GetImage(dir);
         canvasContext.drawImage(img, this.Left(), this.Bottom(), this.Width(), this.Height());
+        StyleText("red","50px arial","centre","middle");
+        canvasContext.fillText(this.playerNickname,this.Left(),this.y, this.Width());
     }
     Update(delta)
     {
