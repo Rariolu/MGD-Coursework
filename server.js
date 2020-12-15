@@ -364,7 +364,7 @@ function CreateCoin()
     var coinID = coinCount++;
     var posX = Math.floor(Math.random() * util.maxX) + util.minX;
     var posY = Math.floor(Math.random() * util.maxY) + util.minY;
-    var pos = {x:posX, y:posY};
+    var pos = new util.Vector(posX, posY);//{x:posX, y:posY};
     var coin = new ServerCoin(coinID,pos);
     coins[coinID] = coin;
     io.emit(util.SOCKET_EVENT.COIN_SPAWN, coin);
