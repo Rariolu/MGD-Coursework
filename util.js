@@ -98,4 +98,5 @@ if (typeof process === 'object')
     exports.playerWidth = playerWidth;
     exports.playerHeight = playerHeight;
     exports.SOCKET_EVENT = SOCKET_EVENT;
+    exports.Vector = Vector;
 }
