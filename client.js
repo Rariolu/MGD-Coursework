@@ -14,7 +14,11 @@ const IMAGE =
     BULLET: "bullet",
     BACKGROUND: "background",
     COIN: "coin",
-    PAUSE: "pause"
+    PAUSE: "pause",
+    STARLY_DOWN: "starly_down_",
+    STARLY_LEFT: "starly_left_",
+    STARLY_RIGHT: "starly_right_",
+    STARLY_UP: "starly_up_"
 };
 
 const AUDIO =
@@ -375,10 +379,10 @@ function ServerConnect()
 
         for (var i = 0; i < 3; i++)
         {
-            AddImage("starly_down_"+i, imgStarlyDown + i + ".png");
-            AddImage("starly_left_"+i,imgStarlyLeft + i + ".png");
-            AddImage("starly_right_"+i, imgStarlyRight + i + ".png");
-            AddImage("starly_up_"+i, imgStarlyUp + i + ".png");
+            AddImage(IMAGE.STARLY_DOWN + i, imgStarlyDown + i + ".png");
+            AddImage(IMAGE.STARLY_LEFT + i,imgStarlyLeft + i + ".png");
+            AddImage(IMAGE.STARLY_RIGHT + i, imgStarlyRight + i + ".png");
+            AddImage(IMAGE.STARLY_UP + i, imgStarlyUp + i + ".png");
         }
 
         AddAudio(AUDIO.COIN, audCoin);
