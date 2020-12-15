@@ -305,7 +305,7 @@ function KeyDown(e)
             var dY = players[thisID].dY;
             var dir = new Vector(dX, dY);
             console.log(dir);
-            dir.Normalise();
+            dir = dir.Normalise();
             console.log(dir);
             if (dir.Magnitude() == 0)
             {
@@ -699,7 +699,7 @@ function DownInteraction(pos)
                     if (d2 <= (shootDistance*shootDistance))
                     {
                         var v1 = new Vector(mX - x, mY - y);
-                        v1.Normalise();
+                        v1 = v1.Normalise();
                         socket.emit(SOCKET_EVENT.SHOT_FIRED,{x,y}, v1);
                     }
                 }
@@ -977,10 +977,13 @@ class Vector
     Normalise()
     {
         var magnitude = this.Magnitude();
+        var newX = this.x;
+        var newY = this.y;
         if (magnitude != 0)
         {
-            this.x /= magnitude;
-            this.y /= magnitude;
+            newX /= magnitude;
+            newY /= magnitude;
         }
+        return new Vector(newX, newY);
     }
 }
