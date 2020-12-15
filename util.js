@@ -38,6 +38,47 @@ const SOCKET_EVENT =
     SEND_NICKNAME: "sendnickname"
 };
 
+class Vector
+{
+    constructor(_x, _y)
+    {
+        this.x = _x;
+        this.y = _y;
+    }
+    Add(otherVector)
+    {
+        var newX = this.x + otherVector.x;
+        var newY = this.y + otherVector.y;
+        return new Vector(newX, newY);
+    }
+    Magnitude()
+    {
+        var x2 = this.x * this.x;
+        var y2 = this.y * this.y;
+        var m2 = x2 + y2;
+        console.log("x2: "+x2+"; y2: "+y2 +"; m2: "+m2);
+        return Math.sqrt(m2);
+    }
+    Normalise()
+    {
+        var magnitude = this.Magnitude();
+        var newX = this.x;
+        var newY = this.y;
+        if (magnitude != 0)
+        {
+            newX /= magnitude;
+            newY /= magnitude;
+        }
+        return new Vector(newX, newY);
+    }
+    Subtract(otherVector)
+    {
+        var newX = this.x - otherVector.x;
+        var newY = this.y - otherVector.y;
+        return new Vector(newX, newY);
+    }
+}
+
 if (typeof process === 'object')
 //Check if the script is running on the server
 {
