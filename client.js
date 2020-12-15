@@ -122,14 +122,16 @@ function GetMousePosition(mouseEvent)
 {
     var mouseX = mouseEvent.clientX - canvas.offsetLeft;
     var mouseY = mouseEvent.clientY - canvas.offsetTop;
-    return {x: mouseX, y:mouseY};
+    //return {x: mouseX, y:mouseY};
+    return new Vector(mouseX, mouseY);
 }
 
 function GetTouchPosition(touchEvent)
 {
     var touchX = touchEvent.touches[0].pageX - canvas.offsetLeft;
     var touchY = touchEvent.touches[0].pageY - canvas.offsetTop;
-    return {x:touchX, y:touchY};
+    //return {x:touchX, y:touchY};
+    return new Vector(touchX, touchY);
 }
 
 function Initialisation()
