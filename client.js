@@ -771,16 +771,16 @@ class AnimationManager
         this.frameDuration = duration;
         this.frameTimer = this.frameDuration;
         this.frames = {};
-        this.frames["down"] = [];
-        this.frames["left"] = [];
-        this.frames["right"] = [];
-        this.frames["up"] = [];
+        this.frames[DIR.DOWN] = [];
+        this.frames[DIR.LEFT] = [];
+        this.frames[DIR.RIGHT] = [];
+        this.frames[DIR.UP] = [];
         for (var i = 0; i < iters; i++)
         {
-            this.frames["down"][i] = name+"_down_"+i;
-            this.frames["left"][i] = name+"_left_"+i;
-            this.frames["right"][i] = name+"_right_"+i;
-            this.frames["up"][i] = name+"_up_"+i;
+            this.frames[DIR.DOWN][i] = name+"_down_"+i;
+            this.frames[DIR.LEFT][i] = name+"_left_"+i;
+            this.frames[DIR.RIGHT][i] = name+"_right_"+i;
+            this.frames[DIR.UP][i] = name+"_up_"+i;
         }
         this.frame = 0;
         this.frameCount = iters;
