@@ -68,7 +68,6 @@ class Vector
         var x2 = this.x * this.x;
         var y2 = this.y * this.y;
         var m2 = x2 + y2;
-        console.log("x2: "+x2+"; y2: "+y2 +"; m2: "+m2);
         return Math.sqrt(m2);
     }
     Multiply(num)
