@@ -14,6 +14,14 @@ const playerLives = 3;
 const playerWidth = 200;
 const playerHeight = 200;
 
+const DIR =
+{
+    DOWN: "down",
+    LEFT: "left",
+    RIGHT: "right",
+    UP: "up"
+};
+
 const SOCKET_EVENT = 
 {
     SERVER_CONNECT: "serverconnect",
