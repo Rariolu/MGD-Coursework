@@ -51,6 +51,18 @@ class Vector
         var newY = this.y + otherVector.y;
         return new Vector(newX, newY);
     }
+    static Create(obj)
+    {
+        return new Vector(obj.x, obj.y);
+    }
+    static Empty()
+    {
+        return new Vector(0, 0);
+    }
+    Equals(otherVector)
+    {
+        return this.x == otherVector.x && this.y == otherVector.y;
+    }
     Magnitude()
     {
         var x2 = this.x * this.x;
@@ -58,6 +70,12 @@ class Vector
         var m2 = x2 + y2;
         console.log("x2: "+x2+"; y2: "+y2 +"; m2: "+m2);
         return Math.sqrt(m2);
+    }
+    Multiply(num)
+    {
+        var newX = this.x * num;
+        var newY = this.y * num;
+        return new Vector(newX, newY);
     }
     Normalise()
     {
