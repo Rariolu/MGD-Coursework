@@ -388,6 +388,8 @@ function ServerConnect()
         }
 
         AddAudio(AUDIO.COIN, audCoin);
+
+        resourcesLoaded = true;
     }
     
     if (canvas.getContext)
@@ -468,7 +470,6 @@ function ServerConnect()
         
         GameLoop();
         ResizeCanvas();
-        resourcesLoaded = true;
     }
 }
 
