@@ -43,7 +43,8 @@ const SOCKET_EVENT =
     SHOT_FIRED: "shotfired",
     CONNECTION: "connection",
     DISCONNECTION: "disconnect",
-    SEND_NICKNAME: "sendnickname"
+    SEND_NICKNAME: "sendnickname",
+    SERVER_DEBUG: "serverdebug"
 };
 
 class Vector
