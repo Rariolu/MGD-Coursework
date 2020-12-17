@@ -6,7 +6,7 @@ var fs = require("fs");
 var util = require("./util.js");
 
 const bodyParser = require('body-parser');
-
+const debug = true;
 var playerCount = 0;
 var bulletCount = 0;
 var players = {};
@@ -423,6 +423,20 @@ function Update()
     for (let p in players)
     {
         players[p].Update(delta);
+    }
+}
+
+function Log(splitter, ...excerpts)
+{
+    var text = "";
+    for (var i = 0; i < excerpts.length; i++)
+    {
+        text += splitter + excerpts[i];
+    }
+    console.log(text);
+    if (debug)
+    {
+        io.emit(util.SOCKET_EVENT.SERVER_DEBUG, text);
     }
 }
 
