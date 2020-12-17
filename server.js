@@ -48,6 +48,7 @@ class ServerPlayer extends GameEntity
         this.scoreChanged = null;
         this.playerShot = null;
         this.lives = util.playerLives;
+        this.playerAlive = true;
     }
     IncrementScore()
     {
@@ -112,8 +113,12 @@ class ServerPlayer extends GameEntity
                         }
                         if (this.lives < 1)
                         {
-                            io.emit(util.SOCKET_EVENT.PLAYER_DIED, this.playerID);
-                            PlayerDespawn(this.playerID);
+                            KillPlayer(this.playerID);
+                            this.playerAlive = false;
+                            if (this.playerDied != null)
+                            {
+                                this.playerDied();
+                            }
                         }
                         DestroyBullet(b);
                     }
@@ -121,6 +126,12 @@ class ServerPlayer extends GameEntity
             }
         }
     }
+}
+
+function KillPlayer(id)
+{
+    io.emit(util.SOCKET_EVENT.PLAYER_DIED, id);
+    PlayerDespawn(id);
 }
 
 class ServerBullet extends GameEntity
@@ -246,53 +257,59 @@ var ioConnection = function(socket)
     
     var dirClick = function(btnID)
     {
-        switch(btnID)
+        if (playerSpawned)
         {
-            case "down":
+            switch(btnID)
             {
-                players[playerID].dY = util.playerSpeed;
-                break;
+                case "down":
+                {
+                    players[playerID].dY = util.playerSpeed;
+                    break;
+                }
+                case "up":
+                {
+                    players[playerID].dY = -util.playerSpeed;
+                    break;
+                }
+                case "left":
+                {
+                    players[playerID].dX = -util.playerSpeed;
+                    break;
+                }
+                case "right":
+                {
+                    players[playerID].dX = util.playerSpeed;
+                    break;
+                }
             }
-            case "up":
-            {
-                players[playerID].dY = -util.playerSpeed;
-                break;
-            }
-            case "left":
-            {
-                players[playerID].dX = -util.playerSpeed;
-                break;
-            }
-            case "right":
-            {
-                players[playerID].dX = util.playerSpeed;
-                break;
-            }
+            
+            socket.emit(util.SOCKET_EVENT.VEL_UPDATE, playerID, players[playerID].dX, players[playerID].dY);
         }
-        
-        socket.emit(util.SOCKET_EVENT.VEL_UPDATE, playerID, players[playerID].dX, players[playerID].dY);
     };
     
     
     
     var dirUnClick = function(btnID)
     {
-        switch(btnID)
+        if (playerSpawned)
         {
-            case "down":
-            case "up":
+            switch(btnID)
             {
-                players[playerID].dY = 0;
-                break;
+                case "down":
+                case "up":
+                {
+                    players[playerID].dY = 0;
+                    break;
+                }
+                case "left":
+                case "right":
+                {
+                    players[playerID].dX = 0;
+                    break;
+                }
             }
-            case "left":
-            case "right":
-            {
-                players[playerID].dX = 0;
-                break;
-            }
+            socket.emit(util.SOCKET_EVENT.VEL_UPDATE,playerID, players[playerID].dX, players[playerID].dY);
         }
-        socket.emit(util.SOCKET_EVENT.VEL_UPDATE,playerID, players[playerID].dX, players[playerID].dY);
     };
     
     
@@ -330,6 +347,16 @@ var ioConnection = function(socket)
             socket.emit(util.SOCKET_EVENT.PLAYER_SHOT, playerID, lives);
         };
         player.playerShot = playerShot;
+
+        var playerDied = function()
+        {
+            console.log(playerNickname+" died :'(");
+            playerSpawned = false;
+            socket.off(util.SOCKET_EVENT.DIR_CLICK, dirClick);
+            socket.off(util.SOCKET_EVENT.dirUnClick, dirUnClick);
+            socket.off(util.SOCKET_EVENT.shotFired, shotFired);
+        };
+        player.playerDied = playerDied;
         
         socket.on(util.SOCKET_EVENT.DIR_CLICK, dirClick);
         socket.on(util.SOCKET_EVENT.DIR_UNCLICK, dirUnClick);
