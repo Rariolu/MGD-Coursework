@@ -187,6 +187,7 @@ function Initialisation()
     socket.on(SOCKET_EVENT.SCORE_CHANGED, ScoreChanged);
     socket.on(SOCKET_EVENT.PLAYER_SHOT, PlayerShot);
     socket.on(SOCKET_EVENT.PLAYER_DIED, PlayerDied);
+    socket.on(SOCKET_EVENT.SERVER_DEBUG, (text) => {console.log("SERVER: "+text);});
 }
 
 function ResizeCanvas()
