@@ -253,8 +253,6 @@ var ioConnection = function(socket)
     SpawnBullets(socket);
     SpawnCoins(socket);
     
-    
-    
     var dirClick = function(btnID)
     {
         if (playerSpawned)
@@ -287,8 +285,6 @@ var ioConnection = function(socket)
         }
     };
     
-    
-    
     var dirUnClick = function(btnID)
     {
         if (playerSpawned)
@@ -312,8 +308,6 @@ var ioConnection = function(socket)
         }
     };
     
-    
-     
     var shotFired = function(pos, dir)
     {
         var bulletID = bulletCount++;
