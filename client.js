@@ -517,6 +517,8 @@ function SetPlayer(id)
 {
     thisID = id;
     gameState = GAMESTATE.MAINGAME;
+    localLives = playerLives;
+    score = 0;
 }
 
 function BulletCreated(serverBullet)
@@ -570,6 +572,7 @@ function PlayerDied(playerID)
     if (playerID == thisID)
     {
         gameState = GAMESTATE.GAMEOVER;
+        SetElementVisibility("topbar", true);
     }
 }
 
@@ -741,6 +744,12 @@ function StyleText(colour, font, alignment, baseLine)
     canvasContext.textBaseline = baseLine;
 }
 
+function btnRespawn_Click()
+{
+    socket.emit(SOCKET_EVENT.REQUEST_RESPAWN);
+    SetElementVisibility("topbar",false);
+}
+
 function btnSubmit_Click()
 {
     var tbNickname = document.getElementById("tbNickname");
@@ -749,12 +758,15 @@ function btnSubmit_Click()
         var nickname = tbNickname.value;
         console.log(nickname);
         socket.emit(SOCKET_EVENT.SEND_NICKNAME,nickname);
+        SetElementVisibility("lblNickname", false);
     }
     else
     {
         console.log("Couldn't find \"tbNickname\".");
     }
-    var topBar = document.getElementById("topbar");
+    SetElementVisibility("topbar", false);
+    SetElementVisibility("btnRespawn", true);
+    /*var topBar = document.getElementById("topbar");
     if (topBar != null)
     {
         topBar.remove();
@@ -762,6 +774,39 @@ function btnSubmit_Click()
     else
     {
         console.log("\"topBar\" not found.");    
+    }*/
+}
+
+function SetVisibility(element, visible)
+{
+    if (visible)
+    {
+        element.style.display = "block";
+    }
+    else
+    {
+        element.style.display = "none";
+    }
+}
+
+function SetElementVisibility(id, visible)
+{
+    var element = document.getElementById(id);
+    if (element != null)
+    {
+        SetVisibility(element, visible);
+        /*if (visible)
+        {
+            element.style.display = "none";
+        }
+        else
+        {
+            element.style.display = "block";
+        }*/
+    }
+    else
+    {
+        console.log("\""+id+"\" doesn't exist.");
     }
 }
 
