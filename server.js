@@ -324,15 +324,8 @@ var ioConnection = function(socket)
     
     var initialisePlayer = function()
     {
-        
-    };
-    
-    var receiveNickname = function(nickname)
-    {
-        playerNickname = nickname;
-        console.log(playerNickname);
         playerID = playerCount++;
-        player = PlayerSpawn(playerID, nickname, socket);
+        player = PlayerSpawn(playerID, playerNickname, socket);
         playerSpawned = true;
         socket.emit(util.SOCKET_EVENT.SET_PLAYER_ID, playerID);
         
@@ -363,7 +356,21 @@ var ioConnection = function(socket)
         socket.on(util.SOCKET_EVENT.SHOT_FIRED, shotFired);
     };
     
+    var receiveNickname = function(nickname)
+    {
+        playerNickname = nickname;
+        console.log(playerNickname);
+        initialisePlayer();
+    };
+    
     socket.on(util.SOCKET_EVENT.SEND_NICKNAME, receiveNickname);
+
+    var requestRespawn = function()
+    {
+        initialisePlayer();
+    };
+
+    socket.on(util.SOCKET_EVENT.REQUEST_RESPAWN, requestRespawn);
     
     var ioDisconnection = function()
     {
@@ -431,13 +438,22 @@ function Log(splitter, ...excerpts)
     var text = "";
     for (var i = 0; i < excerpts.length; i++)
     {
-        text += splitter + excerpts[i];
+        if (i > 0)
+        {
+            text += splitter;
+        }
+        text += excerpts[i];
     }
     console.log(text);
     if (debug)
     {
         io.emit(util.SOCKET_EVENT.SERVER_DEBUG, text);
     }
+}
+
+function LogText(text)
+{
+    Log("",text);
 }
 
 var gameLoop = function()
@@ -451,6 +467,7 @@ var gameLoop = function()
 var main = function()
 {
     console.log("Listening on 3000.");
+    Log(" ","text","fjrfjroijfior","jifjorijfrioj");
     prevTime = Date.now();
     setInterval(gameLoop, 5);
 }
