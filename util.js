@@ -44,7 +44,8 @@ const SOCKET_EVENT =
     CONNECTION: "connection",
     DISCONNECTION: "disconnect",
     SEND_NICKNAME: "sendnickname",
-    SERVER_DEBUG: "serverdebug"
+    SERVER_DEBUG: "serverdebug",
+    REQUEST_RESPAWN: "requestrespawn"
 };
 
 class Vector
