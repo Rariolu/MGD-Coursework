@@ -302,19 +302,22 @@ function KeyDown(e)
         }
         case 32: //Space
         {
-            var x = players[thisID].x;
-            var y = players[thisID].y;
-            var dX = players[thisID].dX;
-            var dY = players[thisID].dY;
-            var dir = new Vector(dX, dY);
-            console.log(dir);
-            dir = dir.Normalise();
-            console.log(dir);
-            if (dir.Magnitude() == 0)
+            if (!isPaused)
             {
-                dir.y = -1;
+                var x = players[thisID].x;
+                var y = players[thisID].y;
+                var dX = players[thisID].dX;
+                var dY = players[thisID].dY;
+                var dir = new Vector(dX, dY);
+                console.log(dir);
+                dir = dir.Normalise();
+                console.log(dir);
+                if (dir.Magnitude() == 0)
+                {
+                    dir.y = -1;
+                }
+                socket.emit(SOCKET_EVENT.SHOT_FIRED, {x, y}, dir);
             }
-            socket.emit(SOCKET_EVENT.SHOT_FIRED, {x, y}, dir);
             break;
         }
         case 27: //Escape
