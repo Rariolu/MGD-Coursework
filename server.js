@@ -461,7 +461,6 @@ var gameLoop = function()
 var main = function()
 {
     console.log("Listening on 3000.");
-    Log(" ","text","fjrfjroijfior","jifjorijfrioj");
     prevTime = Date.now();
     setInterval(gameLoop, 5);
 }
