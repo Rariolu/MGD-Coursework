@@ -60,6 +60,10 @@ class ServerPlayer extends GameEntity
     }
     Update(delta)
     {
+        if (!this.playerAlive)
+        {
+            return;
+        }
         var prevX = this.x;
         var prevY = this.y;
         super.Update(delta);
@@ -121,6 +125,11 @@ class ServerPlayer extends GameEntity
                             }
                         }
                         DestroyBullet(b);
+
+                        if (players[bullet.senderID] != null)
+                        {
+                            players[bullet.senderID].IncrementScore();
+                        }
                     }
                 }
             }
