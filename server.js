@@ -474,4 +474,6 @@ var main = function()
     setInterval(gameLoop, 5);
 }
 
-http.listen(3000,main);
+const port = process.env.PORT || 3000;
+
+http.listen(port, main);
