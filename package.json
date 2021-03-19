@@ -1,0 +1,25 @@
+{
+  "name": "mgd-coursework",
+  "version": "14.15.4",
+  "description": "My coursework for the \"Mobile Game Development\" module of my university course.",
+  "main": "server.js",
+  "dependencies": {
+    "express": "^4.17.1",
+    "socket.io": "^3.0.3"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Rariolu/MGD-Coursework.git"
+  },
+  "author": "Sophie Coyne",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Rariolu/MGD-Coursework/issues"
+  },
+  "homepage": "https://github.com/Rariolu/MGD-Coursework#readme"
+}
